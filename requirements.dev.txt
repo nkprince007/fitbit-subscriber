@@ -7,4 +7,3 @@ rope
 pytest
 pytest-cov
 pytest-django
-django-extensions

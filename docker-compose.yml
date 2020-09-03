@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    command: ./bin/entrypoint-local.sh
+    environment:
+      - DJANGO_DEBUG=True
+      # In production systems or for testing purposes, use these environment
+      # variables to define database connection
+      # - DB_PORT=5432
+      # - DB_ADDRESS=db
+      # - DB_NAME=fitbit-subscriber-db
+      # - DB_USER=fitbit-subscriber
+      # - DB_PASSWORD=fitbit-subscriber
+    volumes:
+      - .:/opt/app:Z
+    ports:
+      - 8000:8000
+
+volumes:
+  db_data: {}
