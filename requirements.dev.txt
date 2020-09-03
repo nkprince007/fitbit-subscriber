@@ -1,0 +1,9 @@
+-r requirements.txt
+pylint
+pylint_django
+pylint_celery
+autopep8
+rope
+pytest
+pytest-cov
+pytest-django
