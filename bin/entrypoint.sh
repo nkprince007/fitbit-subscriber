@@ -2,7 +2,7 @@
 
 set -e
 
-while ! pg_isready -h $DB_HOST -p $DB_PORT 2>/dev/null; do
+while ! pg_isready -h $DB_ADDRESS -p $DB_PORT 2>/dev/null; do
     echo "Waiting for database ..."
     sleep 1
 done
