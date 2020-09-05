@@ -1,11 +1,17 @@
 from base64 import b64encode
 from urllib.parse import urljoin
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
-import fitbit
 from fitbit.exceptions import HTTPUnauthorized
 import requests
+
+from fitbit_auth.utils import create_user_profile
+
+
+User = get_user_model()
 
 
 FITBIT_AUTHORIZE_BASE_URL = 'https://www.fitbit.com/oauth2/authorize'
@@ -55,22 +61,13 @@ def auth_complete(request):
         'code': code
     }
     try:
-        response = requests.post(url, data=data, headers=headers).json()
-        access_token = response.get('access_token')
-        refresh_token = response.get('refresh_token')
-        expires_at = response.get('expires_at')
-        user_id = response.get('user_id')
-        client = fitbit.Fitbit(settings.FITBIT_CLIENT_ID,
-                               settings.FITBIT_CLIENT_SECRET,
-                               access_token,
-                               refresh_token,
-                               expires_at)
-        user = client.user_profile_get(user_id)
+        credentials = requests.post(url, data=data, headers=headers).json()
+        user_id = credentials.get('user_id')
+        if not User.objects.filter(username=user_id).exists():
+            fitbit_user = create_user_profile(credentials)
+        else:
+            fitbit_user = User.objects.get(username=user_id).fitbituser
+        profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError) as error:
         return JsonResponse({'error': str(error)})
-    return JsonResponse({
-        'response': response,
-        'headers': headers,
-        'data': data,
-        **user,
-    })
+    return JsonResponse({'profile': profile})
