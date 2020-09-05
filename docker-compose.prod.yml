@@ -13,7 +13,9 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
   app:
-    build: .
+    depends_on:
+      - db
+    image: registry.gitlab.com/uic-evl/fitbit-subscriber
     restart: unless-stopped
     environment:
       - DJANGO_DEBUG=False
