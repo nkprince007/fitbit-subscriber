@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'rest_framework',
+    'fitbit_auth.apps.FitbitAuthConfig',
 ]
 
 MIDDLEWARE = [
@@ -63,10 +64,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'subscriber.urls'
 
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,3 +152,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # https://github.com/adamchainz/django-cors-headers
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Fitbit OAuth Configuration
+
+FITBIT_CLIENT_ID = os.environ.get('FITBIT_CLIENT_ID', '22BRS8')
+FITBIT_CLIENT_SECRET = os.environ.get('FITBIT_CLIENT_SECRET',
+                                      '17ab02407fe2d0d38a3c968e9a740a6d')
