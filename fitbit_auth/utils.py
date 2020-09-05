@@ -5,6 +5,11 @@ from fitbit import Fitbit
 from fitbit_auth.models import FitbitUser, User
 
 
+def add_subscription(fitbit_user: FitbitUser):
+    client = fitbit_user.client
+    return client.subscription(fitbit_user.user.username, None)
+
+
 def create_user_profile(credentials: dict):
     access_token = credentials.get('access_token')
     refresh_token = credentials.get('refresh_token')
@@ -22,8 +27,10 @@ def create_user_profile(credentials: dict):
         username=profile.get('encodedId'),
         first_name=profile.get('firstName'),
         last_name=profile.get('lastName'))
-    return FitbitUser.objects.create(user=user,
-                                     scope=scope,
-                                     refresh_token=refresh_token,
-                                     access_token=access_token,
-                                     expires_at=expires_at)
+    fitbit_user = FitbitUser.objects.create(user=user,
+                                            scope=scope,
+                                            refresh_token=refresh_token,
+                                            access_token=access_token,
+                                            expires_at=expires_at)
+    add_subscription(fitbit_user)
+    return fitbit_user

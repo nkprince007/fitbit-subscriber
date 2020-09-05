@@ -3,9 +3,11 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
 from fitbit.exceptions import HTTPUnauthorized
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 import requests
 
 from fitbit_auth.utils import create_user_profile
@@ -45,6 +47,7 @@ def auth_initialize(request):
     return redirect(request.url)
 
 
+@api_view(['GET'])
 def auth_complete(request):
     code = request.GET.get('code')
     url = urljoin(FITBIT_API_BASE_URL, 'oauth2/token')
@@ -69,5 +72,13 @@ def auth_complete(request):
             fitbit_user = User.objects.get(username=user_id).fitbituser
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError) as error:
-        return JsonResponse({'error': str(error)})
-    return JsonResponse({'profile': profile})
+        return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'profile': profile}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+def webhook_listen(request):
+    new_code = request.GET.get('verify')
+    if new_code == settings.FITBIT_SUBSCRIBER_VERIFICATION_CODE:
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+    return Response(None, status=status.HTTP_404_NOT_FOUND)

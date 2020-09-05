@@ -16,10 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from fitbit_auth.views import index
+from fitbit_auth.views import index, webhook_listen
 
 
 urlpatterns = [
+    path('webhook/', webhook_listen),
     path('admin/', admin.site.urls),
     path('auth/', include('fitbit_auth.urls')),
     path('', index),
