@@ -9,7 +9,9 @@ HEALTHCHECK --interval=5m --timeout=15s --start-period=30s \
 
 ENV APP_ROOT=/opt/app \
     APP_USER=django_admin \
-    LOG_LEVEL=info
+    LOG_LEVEL=info \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR $APP_ROOT
 
