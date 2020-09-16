@@ -3,13 +3,14 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from fitbit.exceptions import HTTPUnauthorized
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
 
+from fitbit_auth.models import FitbitUser
 from fitbit_auth.utils import create_user_profile
 
 
@@ -34,6 +35,17 @@ FITBIT_SCOPES = [
 
 def index(request):
     return render(request, 'index.html')
+
+
+@api_view(('GET',))
+def get_profile(request, **kwargs):
+    user = get_object_or_404(User, id=kwargs.get('id'))
+    try:
+        client = user.fitbituser.client
+        return Response(client.user_profile_get(user.username).get('user'))
+    except FitbitUser.DoesNotExist:
+        return Response({'detail': 'Not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 def auth_initialize(request):
@@ -71,7 +83,7 @@ def auth_complete(request):
         else:
             fitbit_user = User.objects.get(username=user_id).fitbituser
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
-    except (HTTPUnauthorized, requests.exceptions.HTTPError) as error:
+    except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
         return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'profile': profile}, status=status.HTTP_200_OK)
 
