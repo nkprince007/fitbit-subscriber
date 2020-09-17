@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'fitbit_auth.apps.FitbitAuthConfig',
+    'fitbit_data.apps.FitbitDataConfig',
 ]
 
 MIDDLEWARE = [
