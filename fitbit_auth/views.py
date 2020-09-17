@@ -41,7 +41,7 @@ def index(request):
 def get_profile(request, **kwargs):
     user = get_object_or_404(User, id=kwargs.get('id'))
     try:
-        client = user.fitbituser.client
+        client = user.fb_auth.client
         return Response(client.user_profile_get(user.username).get('user'))
     except FitbitUser.DoesNotExist:
         return Response({'detail': 'Not found.'},
@@ -81,7 +81,7 @@ def auth_complete(request):
         if not User.objects.filter(username=user_id).exists():
             fitbit_user = create_user_profile(credentials)
         else:
-            fitbit_user = User.objects.get(username=user_id).fitbituser
+            fitbit_user = User.objects.get(username=user_id).fb_auth
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
         return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)

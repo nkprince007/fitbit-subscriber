@@ -9,7 +9,9 @@ User = get_user_model()
 
 
 class FitbitUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE,
+                                related_name='fb_auth')
     access_token = models.TextField()
     refresh_token = models.TextField()
     scope = models.TextField()
