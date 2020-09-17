@@ -17,14 +17,16 @@ class FitbitUser(models.Model):
 
     @property
     def client(self):
-        client = Fitbit(settings.FITBIT_CLIENT_ID,
-                        settings.FITBIT_CLIENT_SECRET,
-                        self.access_token,
-                        self.refresh_token,
-                        self.expires_at.timestamp())
-        return client
-        # token = client.client.refresh_token()
-        # self.access_token = token.access_token
-        # self.refresh_token = token.refresh_token
-        # self.save()
-        # return client
+        def update_token(token):
+            self.access_token = token.get('access_token')
+            self.refresh_token = token.get('refresh_token')
+            self.expires_at = timezone.now() + (
+                timezone.timedelta(seconds=token.get('expires_in')))
+            self.save()
+
+        return Fitbit(settings.FITBIT_CLIENT_ID,
+                      settings.FITBIT_CLIENT_SECRET,
+                      self.access_token,
+                      self.refresh_token,
+                      self.expires_at.timestamp(),
+                      refresh_cb=update_token)
