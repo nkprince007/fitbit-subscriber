@@ -11,7 +11,7 @@ from rest_framework.response import Response
 import requests
 
 from fitbit_auth.models import FitbitUser
-from fitbit_auth.utils import create_user_profile
+from fitbit_auth.utils import create_user_profile, verified_signature_required
 
 
 User = get_user_model()
@@ -89,8 +89,17 @@ def auth_complete(request):
 
 
 @api_view(['GET', 'POST'])
+@verified_signature_required
 def webhook_listen(request):
-    new_code = request.GET.get('verify')
-    if new_code == settings.FITBIT_SUBSCRIBER_VERIFICATION_CODE:
-        return Response(None, status=status.HTTP_204_NO_CONTENT)
-    return Response(None, status=status.HTTP_404_NOT_FOUND)
+    # Subscription verification process
+    # Reference: https://dev.fitbit.com/build/reference/web-api/subscriptions/#verify-a-subscriber
+    code = request.GET.get('verify')
+    if code:
+        if code == settings.FITBIT_SUBSCRIBER_VERIFICATION_CODE:
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+        return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+    # TODO: Process notifications in background with celery
+    # notifications = request.data
+    # process_notifications.delay(notifications)
+    return Response(None, status=status.HTTP_204_NO_CONTENT)

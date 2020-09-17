@@ -9,3 +9,4 @@ uvicorn
 django-extensions
 requests
 dj-database-url
+django-ipware
