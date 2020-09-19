@@ -8,7 +8,7 @@ HEALTHCHECK --interval=5m --timeout=15s --start-period=30s \
     CMD curl --fail http://127.0.0.1:8000/admin/ || exit 1
 
 ENV APP_ROOT=/opt/app \
-    APP_USER=django_admin \
+    APP_USER=django \
     LOG_LEVEL=info \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -32,3 +32,5 @@ RUN pip install -r requirements.txt
 ADD . $APP_ROOT
 
 RUN python3 manage.py collectstatic --no-input
+
+USER $APP_USER
