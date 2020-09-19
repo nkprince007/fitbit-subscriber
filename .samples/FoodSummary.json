@@ -1,0 +1,42 @@
+{
+  "foods": [
+    {
+      "isFavorite": false,
+      "logDate": "2020-09-19",
+      "logId": 23336958370,
+      "loggedFood": {
+        "accessLevel": "PRIVATE",
+        "amount": 4,
+        "brand": "test",
+        "calories": 400,
+        "creatorEncodedId": "8SVBNX",
+        "foodId": 778149065,
+        "mealTypeId": 1,
+        "name": "Bread",
+        "unit": {
+          "id": 311,
+          "name": "slice",
+          "plural": "slices"
+        },
+        "units": [311]
+      },
+      "nutritionalValues": {
+        "calories": 400,
+        "carbs": 0,
+        "fat": 0,
+        "fiber": 0,
+        "protein": 0,
+        "sodium": 0
+      }
+    }
+  ],
+  "summary": {
+    "calories": 400,
+    "carbs": 0,
+    "fat": 0,
+    "fiber": 0,
+    "protein": 0,
+    "sodium": 0,
+    "water": 750
+  }
+}

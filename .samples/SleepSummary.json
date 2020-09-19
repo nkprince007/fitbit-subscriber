@@ -1,0 +1,48 @@
+{
+  "sleep": [
+    {
+      "dateOfSleep": "2020-09-19",
+      "duration": 3600000,
+      "efficiency": 100,
+      "endTime": "2020-09-19T19:00:00.000",
+      "infoCode": 0,
+      "isMainSleep": true,
+      "levels": {
+        "data": [
+          {
+            "dateTime": "2020-09-19T18:00:00.000",
+            "level": "asleep",
+            "seconds": 3600
+          }
+        ],
+        "summary": {
+          "asleep": {
+            "count": 0,
+            "minutes": 60
+          },
+          "awake": {
+            "count": 0,
+            "minutes": 0
+          },
+          "restless": {
+            "count": 0,
+            "minutes": 0
+          }
+        }
+      },
+      "logId": 28917903931,
+      "minutesAfterWakeup": 0,
+      "minutesAsleep": 60,
+      "minutesAwake": 0,
+      "minutesToFallAsleep": 0,
+      "startTime": "2020-09-19T18:00:00.000",
+      "timeInBed": 60,
+      "type": "classic"
+    }
+  ],
+  "summary": {
+    "totalMinutesAsleep": 60,
+    "totalSleepRecords": 1,
+    "totalTimeInBed": 60
+  }
+}

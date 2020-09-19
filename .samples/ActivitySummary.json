@@ -1,0 +1,106 @@
+{
+  "activities": [
+    {
+      "activityId": 90013,
+      "activityParentId": 90013,
+      "activityParentName": "Walk",
+      "calories": 449,
+      "description": "Walking less than 2 mph, strolling very slowly",
+      "duration": 3379000,
+      "hasActiveZoneMinutes": false,
+      "hasStartTime": true,
+      "isFavorite": false,
+      "lastModified": "2020-09-19T08:29:53.000Z",
+      "logId": 34400132171,
+      "name": "Walk",
+      "startDate": "2020-09-19",
+      "startTime": "12:07",
+      "steps": 4878
+    }
+  ],
+  "goals": {
+    "activeMinutes": 30,
+    "caloriesOut": 2976,
+    "distance": 8.05,
+    "floors": 10,
+    "steps": 10000
+  },
+  "summary": {
+    "activeScore": -1,
+    "activityCalories": 1028,
+    "calorieEstimationMu": 2100,
+    "caloriesBMR": 1653,
+    "caloriesOut": 2576,
+    "caloriesOutUnestimated": 2576,
+    "distances": [
+      {
+        "activity": "total",
+        "distance": 5.46
+      },
+      {
+        "activity": "tracker",
+        "distance": 5.46
+      },
+      {
+        "activity": "loggedActivities",
+        "distance": 0
+      },
+      {
+        "activity": "veryActive",
+        "distance": 3.34
+      },
+      {
+        "activity": "moderatelyActive",
+        "distance": 0.47
+      },
+      {
+        "activity": "lightlyActive",
+        "distance": 1.65
+      },
+      {
+        "activity": "sedentaryActive",
+        "distance": 0
+      }
+    ],
+    "elevation": 3.05,
+    "fairlyActiveMinutes": 14,
+    "floors": 1,
+    "heartRateZones": [
+      {
+        "caloriesOut": 522.20028,
+        "max": 98,
+        "min": 30,
+        "minutes": 243,
+        "name": "Out of Range"
+      },
+      {
+        "caloriesOut": 896.43558,
+        "max": 137,
+        "min": 98,
+        "minutes": 170,
+        "name": "Fat Burn"
+      },
+      {
+        "caloriesOut": 0,
+        "max": 167,
+        "min": 137,
+        "minutes": 0,
+        "name": "Cardio"
+      },
+      {
+        "caloriesOut": 0,
+        "max": 220,
+        "min": 167,
+        "minutes": 0,
+        "name": "Peak"
+      }
+    ],
+    "lightlyActiveMinutes": 96,
+    "marginalCalories": 699,
+    "restingHeartRate": 72,
+    "sedentaryMinutes": 1177,
+    "steps": 7860,
+    "useEstimation": true,
+    "veryActiveMinutes": 52
+  }
+}
