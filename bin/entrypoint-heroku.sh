@@ -2,13 +2,8 @@
 
 set -e
 
-while ! pg_isready -h $DB_ADDRESS -p $DB_PORT 2>/dev/null; do
-    echo "Waiting for database ..."
-    sleep 1
-done
-
 echo "Migrating database ..."
-ENV=production python3 manage.py migrate --no-input
+python3 manage.py migrate --no-input
 
 exec \
     gunicorn subscriber.asgi:application \
