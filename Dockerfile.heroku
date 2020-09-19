@@ -33,8 +33,8 @@ ADD . $APP_ROOT
 
 RUN python3 manage.py collectstatic --no-input
 
-USER $APP_USER
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 ADD bin/heroku-exec.sh /app/.profile.d/heroku-exec.sh
 
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+USER $APP_USER
