@@ -23,6 +23,7 @@ RUN apt-get update && \
         postgresql-client \
         openssh-server openssh-client \
         bash \
+        iproute2 \
     && \
     apt-get clean
 
