@@ -17,12 +17,12 @@ LOGGER = logging.getLogger('django.server')
 
 def verified_signature_required(function):
     def wrapper(request, *args, **kwargs):
-        signature = request.META.get('HTTP_X_FITBIT_SIGNATURE').encode('utf-8')
+        signature = request.META.get('HTTP_X_FITBIT_SIGNATURE')
         if signature:
             key = bytes(f'{settings.FITBIT_CLIENT_SECRET}&', 'utf-8')
             hashed = hmac.new(key, request.body, sha1)
             computed_signature = b64encode(hashed.digest())
-            if computed_signature != signature:
+            if computed_signature != signature.encode('utf-8'):
                 ip_addr, _ = get_client_ip(request)
                 LOGGER.warning('Suspicious "updates" notification from IP: %s',
                                ip_addr)
