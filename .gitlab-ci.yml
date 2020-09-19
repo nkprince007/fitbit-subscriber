@@ -1,4 +1,4 @@
-docker-build-master:
+.docker-build-master:
   image: docker:latest
   stage: build
   services:
@@ -11,7 +11,7 @@ docker-build-master:
   only:
     - master
 
-docker-build:
+.docker-build:
   image: docker:latest
   stage: build
   services:
