@@ -7,3 +7,4 @@ rope
 pytest
 pytest-cov
 pytest-django
+ipython

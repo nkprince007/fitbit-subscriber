@@ -3,10 +3,10 @@ Django~=3.1.0
 djangorestframework~=3.11.0
 django-cors-headers~=3.0
 whitenoise[brotli]~=5.2.0
-psycopg2-binary
-gunicorn
-uvicorn
-django-extensions
-requests
-dj-database-url
-django-ipware
+psycopg2-binary~=2.8.5
+gunicorn~=20.0.4
+uvicorn~=0.11.8
+django-extensions~=2.2.9
+requests~=2.24.0
+dj-database-url~=0.5.0
+django-ipware~=3.0.1
