@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     '.ngrok.io',
+    '.herokuapp.com',
 ]
 
 
