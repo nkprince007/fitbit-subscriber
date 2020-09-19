@@ -10,6 +10,9 @@ class ActivitySummary(models.Model):
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
 
+    class Meta:
+        verbose_name_plural = 'Activity Summary'
+
 
 class SleepSummary(models.Model):
     fb_user = models.ForeignKey(FitbitUser,
@@ -17,6 +20,9 @@ class SleepSummary(models.Model):
                                 related_name='sleep_summary')
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name_plural = 'Sleep Summary'
 
 
 class FoodSummary(models.Model):
@@ -26,6 +32,9 @@ class FoodSummary(models.Model):
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
 
+    class Meta:
+        verbose_name_plural = 'Food Summary'
+
 
 class WaterSummary(models.Model):
     fb_user = models.ForeignKey(FitbitUser,
@@ -33,6 +42,9 @@ class WaterSummary(models.Model):
                                 related_name='water_summary')
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name_plural = 'Water Summary'
 
 
 # TODO: Implementing body weight and fat logs
