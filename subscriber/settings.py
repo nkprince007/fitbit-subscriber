@@ -24,9 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '6764jv$-2^or2(7#p^r#nsq3icnts61*=qbb2967*3g6fgsmi8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+HEROKU = literal_eval(os.environ.get('IS_HEROKU_DEPLOYMENT', 'False'))
 DEBUG = literal_eval(os.environ.get('DJANGO_DEBUG', 'True'))
-HEROKU = (literal_eval(os.environ.get('IS_HEROKU_DEPLOYMENT', 'False'))
-          and not DEBUG)
+if HEROKU:
+    DEBUG = False
+
 
 ALLOWED_HOSTS = [
     'localhost',
