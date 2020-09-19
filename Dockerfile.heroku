@@ -21,6 +21,8 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         curl \
         postgresql-client \
+        openssh-server openssh-client \
+        bash \
     && \
     apt-get clean
 
