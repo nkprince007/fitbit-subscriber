@@ -2,9 +2,6 @@
 
 set -e
 
-echo "Migrating database ..."
-python3 manage.py migrate --no-input
-
 exec \
     gunicorn subscriber.asgi:application \
         --name=subscriber \
