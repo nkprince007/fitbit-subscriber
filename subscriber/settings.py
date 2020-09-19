@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 from ast import literal_eval
-import os
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +25,8 @@ SECRET_KEY = '6764jv$-2^or2(7#p^r#nsq3icnts61*=qbb2967*3g6fgsmi8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = literal_eval(os.environ.get('DJANGO_DEBUG', 'True'))
+HEROKU = (literal_eval(os.environ.get('IS_HEROKU_DEPLOYMENT', 'False'))
+          and not DEBUG)
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -95,6 +97,11 @@ if DEBUG:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+elif HEROKU:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+    }
 else:
     DATABASES = {
         'default': {
@@ -106,7 +113,6 @@ else:
             'PORT': os.environ.get('DB_PORT', 5432)
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
