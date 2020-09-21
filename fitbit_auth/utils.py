@@ -6,7 +6,6 @@ import logging
 from django.conf import settings
 from django.http.response import Http404
 from django.utils import timezone
-from fitbit import Fitbit
 from ipware import get_client_ip
 
 from fitbit_auth.models import FitbitUser, User
@@ -45,16 +44,7 @@ def create_user_profile(credentials: dict):
         timezone.timedelta(seconds=credentials.get('expires_in')))
     scope = credentials.get('scope')
     user_id = credentials.get('user_id')
-    client = Fitbit(settings.FITBIT_CLIENT_ID,
-                    settings.FITBIT_CLIENT_SECRET,
-                    access_token,
-                    refresh_token,
-                    expires_at.timestamp())
-    profile = client.user_profile_get(user_id).get('user')
-    user = User.objects.create(
-        username=profile.get('encodedId'),
-        first_name=profile.get('firstName'),
-        last_name=profile.get('lastName'))
+    user = User.objects.create(username=user_id)
     fitbit_user = FitbitUser.objects.create(user=user,
                                             scope=scope,
                                             refresh_token=refresh_token,
