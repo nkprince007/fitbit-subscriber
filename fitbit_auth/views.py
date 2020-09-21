@@ -23,14 +23,13 @@ FITBIT_AUTHORIZE_BASE_URL = 'https://www.fitbit.com/oauth2/authorize'
 FITBIT_API_BASE_URL = 'https://api.fitbit.com/'
 FITBIT_SCOPES = [
     'activity',
-    'nutrition',
     'heartrate',
     'location',
     'nutrition',
-    'profile',
-    'settings',
+    # 'profile',
+    # 'settings',
     'sleep',
-    'social',
+    # 'social',
     'weight',
 ]
 
