@@ -1,11 +1,6 @@
 FROM python:3.7-slim
 
-CMD ["bin/entrypoint.sh"]
-
-EXPOSE 8000
-
-HEALTHCHECK --interval=5m --timeout=15s --start-period=30s \
-    CMD curl --fail http://127.0.0.1:8000/admin/ || exit 1
+CMD ["bin/entrypoint-heroku.sh"]
 
 ENV APP_ROOT=/opt/app \
     APP_USER=django \
@@ -37,8 +32,8 @@ ADD . $APP_ROOT
 
 RUN python3 manage.py collectstatic --no-input
 
+# For heroku exec to work, default shell needs to be bash
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-
 ADD bin/heroku-exec.sh /app/.profile.d/heroku-exec.sh
 
 USER $APP_USER
