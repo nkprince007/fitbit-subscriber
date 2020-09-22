@@ -24,12 +24,12 @@ FITBIT_API_BASE_URL = 'https://api.fitbit.com/'
 FITBIT_SCOPES = [
     'activity',
     'heartrate',
-    # 'location',
+    # 'location',   # not required
     'nutrition',
-    'profile',
-    'settings',
+    'profile',  # required for subscriptions, block all other info collection manually
+    'settings', # required for subscriptions, block all other info collection manually
     'sleep',
-    # 'social',
+    # 'social', # not required
     'weight',
 ]
 
