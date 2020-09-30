@@ -1,6 +1,21 @@
-version: '3'
+version: "3.7"
+
+x-django-env: &django-env
+  environment:
+    - DJANGO_DEBUG=False
+    - DB_PORT=5432
+    - DB_ADDRESS=db
+    - DB_NAME=fitbit-subscriber-db
+    - DB_USER=fitbit-subscriber
+    - DB_PASSWORD=pheeKoo2rie4eem4
+    - REDIS_ADDRESS=redis
 
 services:
+  redis:
+    image: redis:4-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
   db:
     image: postgres:11-alpine
     restart: unless-stopped
@@ -12,18 +27,23 @@ services:
       - POSTGRES_PASSWORD=pheeKoo2rie4eem4
     volumes:
       - db_data:/var/lib/postgresql/data
-  app:
+  worker:
+    <<: *django-env
     depends_on:
       - db
+      - redis
+    command: ./bin/entrypoint-worker.sh
     image: registry.gitlab.com/uic-evl/fitbit-subscriber
     restart: unless-stopped
-    environment:
-      - DJANGO_DEBUG=False
-      - DB_PORT=5432
-      - DB_ADDRESS=db
-      - DB_NAME=fitbit-subscriber-db
-      - DB_USER=fitbit-subscriber
-      - DB_PASSWORD=pheeKoo2rie4eem4
+  app:
+    <<: *django-env
+    depends_on:
+      - db
+      - redis
+      - worker
+    image: registry.gitlab.com/uic-evl/fitbit-subscriber
+    restart: unless-stopped
 
 volumes:
   db_data: {}
+  redis_data: {}

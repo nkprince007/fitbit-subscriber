@@ -1,11 +1,17 @@
 setup:
   addons:
-  - plan: heroku-postgresql
-    as: DATABASE
+    - plan: heroku-postgresql
+      as: DATABASE
+    - plan: heroku-redis
+      as: REDIS
 build:
   docker:
     web: Dockerfile.heroku
+    worker: Dockerfile.heroku
 release:
   image: web
   command:
     - python3 manage.py migrate --no-input
+run:
+  web: ./bin/entrypoint-heroku.sh
+  worker: ./bin/entrypoint-worker.sh

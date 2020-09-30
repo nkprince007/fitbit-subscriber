@@ -198,3 +198,28 @@ FITBIT_CLIENT_SECRET = os.environ.get('FITBIT_CLIENT_SECRET',
 FITBIT_SUBSCRIBER_VERIFICATION_CODE = os.environ.get(
     'FITBIT_SUBSCRIBER_VERIFICATION_CODE',
     'fdaaebbd1ac8697d7aa750011c7c6a07e88ca14ea2950588c2bbcb0fbb22137d')
+
+
+# Redis in-memory database
+# https://stream-framework.readthedocs.io/en/latest/settings.html
+
+REDIS_ADDRESS = os.environ.get('REDIS_ADDRESS', '127.0.0.1')
+REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+REDIS_DATABASE = os.environ.get('REDIS_DATABASE', 0)
+
+
+# Configuring celery task queue
+# http://docs.celeryproject.org/en/latest/
+
+if DEBUG:
+    CELERY_ALWAYS_EAGER = True
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+else:
+    BROKER_URL = (f'redis://{REDIS_ADDRESS}:{REDIS_PORT}' if not HEROKU
+                  else os.environ.get('REDIS_URL'))
+    CELERY_RESULT_BACKEND = BROKER_URL
+    CELERY_ACCEPT_CONTENT = ['pickle']
+    CELERY_TASK_SERIALIZER = 'pickle'
+    CELERY_RESULT_SERIALIZER = 'pickle'
