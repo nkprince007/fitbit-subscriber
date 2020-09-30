@@ -3,8 +3,8 @@
 set -e
 
 exec \
-    celery worker \
-    -A subscriber \
+    celery -A subscriber \
+    worker \
     --loglevel=$LOG_LEVEL \
     --pidfile= \
     -s /tmp/celerybeat-schedule
