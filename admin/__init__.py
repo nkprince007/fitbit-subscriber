@@ -1,13 +1,37 @@
+import json
+from json.decoder import JSONDecodeError
+import logging
+
 from django import forms
+from django.forms import widgets
 from django.apps import AppConfig
 from django.contrib import admin
 from django.contrib.admin.sites import AlreadyRegistered
+from django.contrib.postgres.fields import JSONField
 from django.db.models import Model, ManyToManyField
+
+
+LOGGER = logging.getLogger('django.server')
+
+
+class PrettyJSONWidget(widgets.Textarea):
+    def format_value(self, value):
+        try:
+            value = json.dumps(json.loads(value), indent=2, sort_keys=True)
+            # these lines will try to adjust size of TextArea to fit to content
+            row_lengths = [len(r) for r in value.split('\n')]
+            self.attrs['rows'] = min(max(len(row_lengths) + 2, 10), 30)
+            self.attrs['cols'] = min(max(max(row_lengths) + 2, 40), 120)
+            return value
+        except JSONDecodeError as err:
+            LOGGER.warning('Error while formatting JSON: %s', err)
+            return super(PrettyJSONWidget, self).format_value(value)
 
 
 class DisplayAllAdmin(admin.ModelAdmin):
     formfield_overrides = {
-        ManyToManyField: {'widget': forms.CheckboxSelectMultiple}
+        ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
+        JSONField: {'widget': PrettyJSONWidget},
     }
 
     def __init__(self, model, site):

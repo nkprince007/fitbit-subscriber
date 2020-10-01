@@ -3,8 +3,8 @@ from typing import Optional
 
 from django.contrib.auth import get_user_model
 
+from admin import LOGGER
 from fitbit_auth.models import FitbitUser
-from fitbit_auth.utils import LOGGER
 from fitbit_data.models import (ActivitySummary,
                                 FoodSummary,
                                 SleepSummary,

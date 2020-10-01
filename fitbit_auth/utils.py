@@ -1,17 +1,14 @@
 from base64 import b64encode
 from hashlib import sha1
 import hmac
-import logging
 
 from django.conf import settings
 from django.http.response import Http404
 from django.utils import timezone
 from ipware import get_client_ip
 
+from admin import LOGGER
 from fitbit_auth.models import FitbitUser, User
-
-
-LOGGER = logging.getLogger('django.server')
 
 
 def verified_signature_required(function):

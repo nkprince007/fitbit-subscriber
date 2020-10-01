@@ -10,10 +10,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
 
+from admin import LOGGER
 from fitbit_auth.models import FitbitUser
-from fitbit_auth.utils import (LOGGER,
-                               create_user_profile,
-                               verified_signature_required)
+from fitbit_auth.utils import create_user_profile, verified_signature_required
 from fitbit_data.tasks import process_notification
 
 
