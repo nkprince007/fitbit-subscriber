@@ -14,6 +14,7 @@ from fitbit_auth.models import FitbitUser
 from fitbit_auth.utils import (LOGGER,
                                create_user_profile,
                                verified_signature_required)
+from fitbit_data.tasks import process_notification
 
 
 User = get_user_model()
@@ -100,8 +101,6 @@ def webhook_listen(request):
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         return Response(None, status=status.HTTP_404_NOT_FOUND)
 
-    # TODO: Process notifications in background with celery
-    notifications = request.data
-    LOGGER.info(notifications)
-    # process_notifications.delay(notifications)
+    for notification in request.data:
+        process_notification.delay(notification)
     return Response(None, status=status.HTTP_204_NO_CONTENT)

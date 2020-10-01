@@ -2,7 +2,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
-from fitbit.api import Fitbit
+
+from subscriber.fitbit import CustomFitbit
 
 
 User = get_user_model()
@@ -18,7 +19,7 @@ class FitbitUser(models.Model):
     expires_at = models.DateTimeField(default=timezone.now)
 
     @property
-    def client(self):
+    def client(self) -> CustomFitbit:
         def update_token(token):
             self.access_token = token.get('access_token')
             self.refresh_token = token.get('refresh_token')
@@ -26,9 +27,9 @@ class FitbitUser(models.Model):
                 timezone.timedelta(seconds=token.get('expires_in')))
             self.save()
 
-        return Fitbit(settings.FITBIT_CLIENT_ID,
-                      settings.FITBIT_CLIENT_SECRET,
-                      self.access_token,
-                      self.refresh_token,
-                      self.expires_at.timestamp(),
-                      refresh_cb=update_token)
+        return CustomFitbit(settings.FITBIT_CLIENT_ID,
+                            settings.FITBIT_CLIENT_SECRET,
+                            self.access_token,
+                            self.refresh_token,
+                            self.expires_at.timestamp(),
+                            refresh_cb=update_token)
