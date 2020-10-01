@@ -3,6 +3,7 @@ from typing import Optional
 
 from django.contrib.auth import get_user_model
 
+from fitbit_auth.models import FitbitUser
 from fitbit_auth.utils import LOGGER
 from fitbit_data.models import (ActivitySummary,
                                 FoodSummary,
@@ -27,12 +28,13 @@ class CollectionType(str, Enum):
 @celery.task
 def process_notification(notification):
     user_id = notification.get('ownerId')
-    fb_user: Optional[User] = User.objects.filter(username=user_id).first()
-    if not fb_user:
+    user: Optional[User] = User.objects.filter(username=user_id).first()
+    if not user or not user.fb_auth:
         LOGGER.warning('User %s not found. Notification: %s',
                        user_id, notification)
         return
 
+    fb_user: FitbitUser = user.fb_auth
     collection_type = notification.get('collectionType')
     date = notification.get('date')
     api_client: CustomFitbit = fb_user.client
