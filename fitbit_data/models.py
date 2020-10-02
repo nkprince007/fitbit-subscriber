@@ -47,4 +47,25 @@ class WaterSummary(models.Model):
         verbose_name_plural = 'Water Summary'
 
 
-# TODO: Implementing body weight and fat logs
+class BodyFatLog(models.Model):
+    fb_user = models.ForeignKey(FitbitUser,
+                                on_delete=models.CASCADE,
+                                related_name='fat_logs')
+    date = models.DateField(default=None)
+    data = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name = 'Body Fat Log'
+        verbose_name_plural = 'Body Fat Logs'
+
+
+class BodyWeightLog(models.Model):
+    fb_user = models.ForeignKey(FitbitUser,
+                                on_delete=models.CASCADE,
+                                related_name='weight_logs')
+    date = models.DateField(default=None)
+    data = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name = 'Body Weight Log'
+        verbose_name_plural = 'Body Weight Logs'

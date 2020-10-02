@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from admin import LOGGER
 from fitbit_auth.models import FitbitUser
 from fitbit_data.models import (ActivitySummary,
+                                BodyFatLog,
+                                BodyWeightLog,
                                 FoodSummary,
                                 SleepSummary,
                                 WaterSummary)
@@ -42,15 +44,15 @@ def process_notification(notification):
     common_kwargs = {'fb_user': fb_user, 'date': date}
 
     if collection_type == CollectionType.activities:
-        activity_data = api_client.activity_summary(user_id, date)
+        activity_data = api_client.get_activity_summary(user_id, date)
         ActivitySummary.objects.update_or_create(
             **common_kwargs, defaults={'data': activity_data})
 
     elif collection_type == CollectionType.foods:
-        food_data = api_client.food_summary(user_id, date)
+        food_data = api_client.get_food_summary(user_id, date)
         FoodSummary.objects.update_or_create(
             **common_kwargs, defaults={'data': food_data})
-        water_data = api_client.water_summary(user_id, date)
+        water_data = api_client.get_water_summary(user_id, date)
         WaterSummary.objects.update_or_create(
             **common_kwargs, defaults={'data': water_data})
 
@@ -59,9 +61,12 @@ def process_notification(notification):
         SleepSummary.objects.update_or_create(
             **common_kwargs, defaults={'data': sleep_data})
 
-    # TODO: Body and fat logs need to be collected
-    # elif collection_type == CollectionType.body:
-    #     pass
-
+    elif collection_type == CollectionType.body:
+        body_fat_data = api_client.get_body_fat_logs(user_id, date)
+        BodyFatLog.objects.update_or_create(
+            **common_kwargs, defaults={'data': body_fat_data})
+        body_weight_data = api_client.get_body_weight_logs(user_id, date)
+        BodyWeightLog.objects.update_or_create(
+            **common_kwargs, defaults={'data': body_weight_data})
     else:
         LOGGER.warning('Collection type: %s not implemented for storage!')
