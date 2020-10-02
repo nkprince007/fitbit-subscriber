@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -54,7 +55,7 @@ def process_notification(notification):
             **common_kwargs, defaults={'data': water_data})
 
     elif collection_type == CollectionType.sleep:
-        sleep_data = api_client.get_sleep(date)
+        sleep_data = api_client.get_sleep(datetime.fromisoformat(date))
         SleepSummary.objects.update_or_create(
             **common_kwargs, defaults={'data': sleep_data})
 
