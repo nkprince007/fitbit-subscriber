@@ -1,5 +1,7 @@
 FROM python:3.7-slim
 
+LABEL maintainer="skumar76@uic.edu"
+
 CMD ["bin/entrypoint.sh"]
 
 EXPOSE 8000
@@ -10,6 +12,7 @@ HEALTHCHECK --interval=5m --timeout=15s --start-period=30s \
 ENV APP_ROOT=/opt/app \
     APP_USER=django \
     LOG_LEVEL=info \
+    CELERY_LOG_LEVEL=INFO \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
@@ -19,7 +22,7 @@ RUN useradd -d $APP_ROOT -r $APP_USER
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-        postgresql-client \
+    postgresql-client \
     && \
     apt-get clean
 

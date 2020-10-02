@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     '[::1]',
     '.ngrok.io',
     '.herokuapp.com',
+    os.environ.get('HOST_IP'),
 ]
 
 

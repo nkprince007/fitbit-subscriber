@@ -29,6 +29,11 @@ class CollectionType(str, Enum):
 
 
 @celery.task
+def add(first, second):
+    return first + second
+
+
+@celery.task
 def process_additional_data(fb_user: FitbitUser, date: str = 'today'):
     api_client = fb_user.client
     data = api_client.time_series(

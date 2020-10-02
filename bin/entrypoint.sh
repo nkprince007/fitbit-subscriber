@@ -2,6 +2,12 @@
 
 set -e
 
+export DB_ADDRESS=${DATABASE_SERVICE_HOST:-$DB_ADDRESS}
+export DB_PORT=${DATABASE_SERVICE_PORT:-$DB_PORT}
+
+export REDIS_ADDRESS=${REDIS_SERVICE_HOST:-$REDIS_ADDRESS}
+export REDIS_PORT=${REDIS_SERVICE_PORT:-$REDIS_PORT}
+
 while ! pg_isready -h $DB_ADDRESS -p $DB_PORT 2>/dev/null; do
     echo "Waiting for database ..."
     sleep 1

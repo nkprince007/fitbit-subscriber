@@ -10,10 +10,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
 
-from admin import LOGGER
 from fitbit_auth.models import FitbitUser
 from fitbit_auth.utils import create_user_profile, verified_signature_required
-from fitbit_data.tasks import process_notification
+from fitbit_data.tasks import add, process_notification
 
 
 User = get_user_model()
@@ -35,6 +34,7 @@ FITBIT_SCOPES = [
 
 
 def index(request):
+    add.delay(1, 2)
     return render(request, 'index.html')
 
 
