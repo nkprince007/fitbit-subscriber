@@ -9,7 +9,7 @@ from fitbit_auth.models import FitbitUser
 from fitbit_data.models import (ActivitySummary,
                                 BodyFatLog,
                                 BodyWeightLog,
-                                FoodSummary,
+                                FoodSummary, HeartRateSummary,
                                 SleepSummary,
                                 WaterSummary)
 from subscriber import celery
@@ -26,6 +26,26 @@ class CollectionType(str, Enum):
     body = 'body'
     foods = 'foods'
     sleep = 'sleep'
+
+
+@celery.task
+def process_additional_data(fb_user: FitbitUser, date: str = 'today'):
+    api_client = fb_user.client
+    data = api_client.time_series(
+        'activities/heart',
+        base_date=date,
+        period='1d'
+    ).get('activities-heart')
+
+    if date == 'today':
+        if len(data) > 0 and data[0].get('dateTime'):
+            date = data[0].get('dateTime')
+        else:
+            now = datetime.today()
+            date = '%s-%s-%s' % (now.year, now.month, now.date)
+
+    HeartRateSummary.objects.update_or_create(
+        fb_user=fb_user, date=date, defaults={'data': data})
 
 
 @celery.task
@@ -47,6 +67,7 @@ def process_notification(notification):
         activity_data = api_client.get_activity_summary(user_id, date)
         ActivitySummary.objects.update_or_create(
             **common_kwargs, defaults={'data': activity_data})
+        process_additional_data.delay(fb_user, date)
 
     elif collection_type == CollectionType.foods:
         food_data = api_client.get_food_summary(user_id, date)

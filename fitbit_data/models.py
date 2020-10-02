@@ -69,3 +69,15 @@ class BodyWeightLog(models.Model):
     class Meta:
         verbose_name = 'Body Weight Log'
         verbose_name_plural = 'Body Weight Logs'
+
+
+class HeartRateSummary(models.Model):
+    fb_user = models.ForeignKey(FitbitUser,
+                                on_delete=models.CASCADE,
+                                related_name='heart_rate_summary')
+    date = models.DateField(default=None)
+    data = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name = 'Heart Rate Timeseries'
+        verbose_name_plural = 'Heart Rate Timeseries'
