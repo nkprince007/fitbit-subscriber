@@ -16,8 +16,82 @@ spec:
         app: web
     spec:
       containers:
+        - name: celery-worker
+          image: fitbit-subscriber:test
+          command: ["bin/entrypoint-worker.sh"]
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: DB_NAME
+              value: fitbit-subscriber-db
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: user
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+            - name: DJANGO_DEBUG
+              value: "False"
+        - name: celery-beat
+          image: fitbit-subscriber:test
+          command: ["bin/entrypoint-beat.sh"]
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: DB_NAME
+              value: fitbit-subscriber-db
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: user
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+            - name: DJANGO_DEBUG
+              value: "False"
         - name: web
           image: fitbit-subscriber:test
+          resources:
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
           ports:
             - containerPort: 8000
           env:

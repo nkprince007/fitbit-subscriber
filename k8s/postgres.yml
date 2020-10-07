@@ -38,12 +38,12 @@ data:
   password: Rml0Yml0U3Vic2NyaWJlclBhc3N3b3Jk
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres
 spec:
+  serviceName: database
   replicas: 1
-  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app: postgres-container
@@ -62,16 +62,13 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: user
-
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-credentials
                   key: password
-
             - name: POSTGRES_DB
               value: fitbit-subscriber-db
-
           ports:
             - containerPort: 5432
           volumeMounts:

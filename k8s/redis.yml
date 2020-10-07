@@ -19,8 +19,8 @@ spec:
         - name: master
           image: redis:6-alpine
           resources:
-            requests:
-              cpu: 100m
+            limits:
+              cpu: 500m
               memory: 100Mi
           ports:
             - containerPort: 6379
