@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: celery-worker
-          image: fitbit-subscriber:test
+          image: nkprince007/fitbit-subscriber:0.0.1
           command: ["bin/entrypoint-worker.sh"]
           resources:
             limits:
@@ -52,7 +52,7 @@ spec:
             - name: DJANGO_DEBUG
               value: "False"
         - name: celery-beat
-          image: fitbit-subscriber:test
+          image: nkprince007/fitbit-subscriber:0.0.1
           command: ["bin/entrypoint-beat.sh"]
           resources:
             limits:
@@ -87,7 +87,7 @@ spec:
             - name: DJANGO_DEBUG
               value: "False"
         - name: web
-          image: fitbit-subscriber:test
+          image: nkprince007/fitbit-subscriber:0.0.1
           resources:
             limits:
               memory: "1024Mi"
