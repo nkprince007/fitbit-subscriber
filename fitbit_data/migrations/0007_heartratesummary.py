@@ -15,10 +15,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='HeartRateSummary',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(default=None)),
                 ('data', models.JSONField(default=dict)),
-                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='heart_rate_summary', to='fitbit_auth.fitbituser')),
+                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='heart_rate_summary', to='fitbit_auth.fitbituser')),
             ],
             options={
                 'verbose_name': 'Heart Rate Timeseries',

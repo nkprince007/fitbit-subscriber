@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fitbituser',
             name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='fb_auth', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, related_name='fb_auth', to=settings.AUTH_USER_MODEL),
         ),
     ]

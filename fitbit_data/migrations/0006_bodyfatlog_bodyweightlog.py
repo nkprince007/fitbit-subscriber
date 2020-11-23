@@ -15,10 +15,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BodyWeightLog',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(default=None)),
                 ('data', models.JSONField(default=dict)),
-                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='weight_logs', to='fitbit_auth.fitbituser')),
+                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='weight_logs', to='fitbit_auth.fitbituser')),
             ],
             options={
                 'verbose_name': 'Body Weight Log',
@@ -28,10 +30,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BodyFatLog',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(default=None)),
                 ('data', models.JSONField(default=dict)),
-                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fat_logs', to='fitbit_auth.fitbituser')),
+                ('fb_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='fat_logs', to='fitbit_auth.fitbituser')),
             ],
             options={
                 'verbose_name': 'Body Fat Log',
