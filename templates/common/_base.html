@@ -1,0 +1,56 @@
+{% load i18n %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% autoescape on%}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {% if DEBUG %}
+  <!-- <meta http-equiv="refresh" content="3" /> -->
+  {% endif %}
+  <title>Fitbit Web App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Roboto", sans-serif;
+    }
+
+    .btn:focus, button:focus, button:hover {
+      outline: none !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  {% include "common/_navbar.html" %}
+  {% block content %} {% endblock %}
+</body>
+
+<script>
+  let chosenPatientId = 0;
+
+  function choosePatient(patientId) {
+    chosenPatientId = parseInt(patientId, 10);
+  }
+</script>
+
+</html>
+{% endautoescape %}

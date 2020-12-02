@@ -17,11 +17,13 @@ from django.contrib import admin
 from django.urls import path, include
 
 from fitbit_auth.views import index, webhook_listen
+from fitbit_data.views import dashboard
 
 
 urlpatterns = [
     path('webhook/', webhook_listen),
     path('admin/', admin.site.urls),
     path('auth/', include('fitbit_auth.urls')),
-    path('', index),
+    path('home/', dashboard, name='home'),
+    path('', index, name='root'),
 ]

@@ -1,23 +1,27 @@
-{% extends "base.html" %}
+{% extends "common/_base.html" %}
 
 {% block content %}
 <style>
-  #login-btn {
+  .custom-button {
     text-align: center;
     background: #6ec33d;
-    margin: 0;
+    margin: 0 0 1em 0;
     border-radius: 1000px;
     display: flex;
   }
 
-  #login-btn a {
+  #dashboard-btn {
+    background-color: #0367fd;
+  }
+
+  .custom-button a {
     color: white;
     text-decoration: none;
     padding: 18px;
   }
 
-  html,
-  body {
+  .login-form {
+    height: 100%;
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
@@ -26,7 +30,16 @@
   }
 </style>
 
-<div id="login-btn">
-  <a href="/auth/login"> Login with Fitbit </a>
+<div class="login-form">
+  {% if request.user and not request.user.id %}
+  <div class="custom-button">
+    <a href="{% url 'login' %}"> Login with Fitbit </a>
+  </div>
+  {% else %}
+  <div class="custom-button" id="dashboard-btn">
+    <a href="{% url 'home' %}"> Go to Dashboard </a>
+  </div>
+  {% endif %}
 </div>
+
 {% endblock %}

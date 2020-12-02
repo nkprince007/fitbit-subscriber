@@ -1,0 +1,41 @@
+{% extends "common/_base.html" %}
+
+{% block content %}
+<style>
+  .grid-wrapper {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    height: calc(100% - 56px);
+    grid-template-columns: 2.5fr 7.5fr;
+  }
+
+  .menu {
+    background-color: #d7faf8;
+  }
+
+  .main {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .main .grid-item {
+    border: 1px solid #dadadada;
+  }
+
+  .main .section-title {
+    padding: .25rem;
+  }
+
+  .main .dual-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+</style>
+
+<div class="grid-wrapper container-fluid">
+  {% include "dashboard/_menu.html" %}
+  {% include "dashboard/_main.html" %}
+</div>
+{% endblock %}
