@@ -61,15 +61,15 @@
       <tbody>
         <tr class="py-0">
           <th class="py-1" scope="row">Name</th>
-          <td class="py-1">John Doe</td>
+          <td id="patient--name" class="text-capitalize py-1"></td>
         </tr>
         <tr class="py-0">
           <th class="py-1" scope="row">Age</th>
-          <td class="py-1">23</td>
+          <td id="patient--age" class="text-capitalize py-1"></td>
         </tr>
         <tr class="py-0">
           <th class="py-1" scope="row">Sex</th>
-          <td class="py-1">Male</td>
+          <td id="patient--sex" class="text-capitalize py-1"></td>
         </tr>
       </tbody>
     </table>
@@ -83,6 +83,7 @@
   let globalSearchInput;
   let globalPeriodInput;
   let globalPatientsList;
+  let globalLoading;
 
   const choosePatient = (btn) => {
     const buttons = globalPatientsList.find(".list-group-item-action");
@@ -98,29 +99,40 @@
     globalConfigForm.submit();
   }
 
-  const configureForm = () => {
-    const data = Object.fromEntries(new URLSearchParams(window.location.search.replace('?', '')));
-    const buttons = globalPatientsList.find(".list-group-item-action");
-    buttons.each((_, el) => el.classList.remove("active"));
+  const configureForm = async () => {
+    globalLoading = true;
+    try {
+      const data = Object.fromEntries(new URLSearchParams(window.location.search.replace('?', '')));
+      const buttons = globalPatientsList.find(".list-group-item-action");
+      buttons.each((_, el) => el.classList.remove("active"));
+      let patientId;
 
-    if (!!data['patientId']) {
-      const btn = buttons.filterByData('patientId', data['patientId'])[0];
-      if (btn) {
-        btn.classList.add("active");
-        globalSearchInput.val(data['patientId']);
+      if (!!data['patientId']) {
+        const btn = buttons.filterByData('patientId', data['patientId'])[0];
+        if (btn) {
+          btn.classList.add("active");
+          globalSearchInput.val(data['patientId']);
+          patientId = data['patientId'];
+        }
+      } else {
+        const btn = buttons[0];
+        if (btn) {
+          btn.classList.add("active");
+          globalSearchInput.val($(btn).data('patientId'));
+          globalConfigForm.submit();
+          return;
+        }
       }
-    } else {
-      const btn = buttons[0];
-      if (btn) {
-        btn.classList.add("active");
-        globalSearchInput.val($(btn).data('patientId'));
-        globalConfigForm.submit();
-      }
-    }
 
-    if (!!data['period']) {
-      globalPeriodInput.val(data['period']);
+      if (!!data['period']) {
+        globalPeriodInput.val(data['period']);
+      }
+
+      await populatePatientDetails(patientId);
+    } catch (err) {
+      console.warn(err);
     }
+    globalLoading = false;
   }
 
   const addListeners = () => {
@@ -136,6 +148,22 @@
     });
 
     configureForm();
+  }
+
+  const populatePatientDetails = async (patientId) => {
+    if (!patientId) return;
+    const sexEl = $('#patient--sex');
+    const nameEl = $('#patient--name');
+    const ageEl = $('#patient--age');
+    const resp = await fetch('https://api.randomuser.me');
+    const data = await resp.json();
+    // TODO: fetch real patient data here
+    const patient = data.results[0];
+    nameEl.text(`${patient.name.title}. ${patient.name.first} ${patient.name.last}`);
+    ageEl.text(patient.dob.age);
+    sexEl.text(patient.gender);
+
+    redrawActivityHeatmap();
   }
 
   const populatePatients = (patients) => {
