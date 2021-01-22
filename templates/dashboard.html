@@ -8,6 +8,11 @@
     display: grid;
     height: calc(100% - 56px);
     grid-template-columns: 2.5fr 7.5fr;
+    grid-template-rows: 1fr;
+  }
+
+  .main, .menu {
+    max-height: 98%;
   }
 
   .menu {
@@ -16,6 +21,9 @@
 
   .main {
     display: grid;
+    /* grid-template-areas:
+      'activity activity nutrition'
+      'body heart-sleep heart-sleep'; */
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
   }

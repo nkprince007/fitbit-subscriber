@@ -1,0 +1,93 @@
+{% load static %}
+
+<style>
+  #body-weight-fat-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+    padding: 4px;
+  }
+</style>
+
+<div class="">
+  <div id="body-weight-fat-charts"></div>
+</div>
+
+<script>
+function drawBodyWeightFatCharts() {
+  const activityChartsEl = $('#body-weight-fat-charts');
+
+  // set the dimensions and margins of the graph
+  var margin = {top: 30, right: 0, bottom: 30, left: 40},
+      width = activityChartsEl.width() / 3 - margin.left - margin.right,
+      height = activityChartsEl.width() / 3 - margin.top - margin.bottom;
+
+  //Read the data
+  d3.csv("{% static 'body_weight_fat_data.csv' %}", function(data) {
+    // group the data: I want to draw one line per group
+    var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+      .key(function(d) { return d.name;})
+      .entries(data);
+
+    // What is the list of groups?
+    allKeys = sumstat.map(function(d){return d.key})
+
+    // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
+    var svg = d3.select('#body-weight-fat-charts')
+      .selectAll("uniqueChart")
+      .data(sumstat)
+      .enter()
+      .append("svg")
+        .attr('font-size', '12px')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+    // Add X axis --> it is a date format
+    var x = d3.scaleLinear()
+      .domain(d3.extent(data, function(d) { return d.year; }))
+      .range([ 0, width ]);
+    svg
+      .append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).ticks(3));
+
+    //Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data, function(d) { return +d.n; })])
+      .range([ height, 0 ]);
+    svg.append("g")
+      .call(d3.axisLeft(y).ticks(5));
+
+    // color palette
+    var color = d3.scaleOrdinal()
+      .domain(allKeys)
+      .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+
+    // Draw the line
+    svg
+      .append("path")
+        .attr("fill", "none")
+        .attr("stroke", 'black')
+        .attr("stroke-width", 1)
+        .attr("d", function(d){
+          return d3.line()
+            .x(function(d) { return x(d.year); })
+            .y(function(d) { return y(+d.n); })
+            (d.values)
+        })
+
+    // Add titles
+    svg
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("y", -5)
+      .attr("x", width/2)
+      .text(function(d){ return(d.key)})
+  })
+}
+
+drawBodyWeightFatCharts();
+</script>

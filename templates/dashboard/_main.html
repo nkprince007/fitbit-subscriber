@@ -5,6 +5,22 @@
     grid-template-rows: 1fr;
     align-items: center;
   }
+
+  /* .activity {
+    grid-area: activity;
+  }
+
+  .nutrition {
+    grid-area: nutrition;
+  }
+
+  .body-weight-fat {
+    grid-area: body;
+  }
+
+  .heart-sleep {
+    grid-area: heart-sleep;
+  } */
 </style>
 
 <div class="main">
@@ -21,11 +37,17 @@
   </div>
   <div class="grid-item nutrition">
     <h6 class="section-title">Nutrition</h6>
+    <div>
+      {% include 'dashboard/nutrition/_stacked_bar_charts.html' %}
+    </div>
   </div>
   <div class="grid-item body-weight-fat">
     <h6 class="section-title">Body Weight & Fat</h6>
+    <div>
+      {% include 'dashboard/body_weight_fat/_linecharts.html' %}
+    </div>
   </div>
-  <div class="dual-section heart-rate">
+  <div class="dual-section heart-sleep">
     <div class="grid-item">
       <h6 class="section-title">Heart Rate</h6>
     </div>
