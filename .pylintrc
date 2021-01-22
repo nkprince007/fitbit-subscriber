@@ -1,0 +1,5 @@
+[MASTER]
+disable=C0111
+enable=W0614
+load-plugins=pylint_django,pylint_celery
+django-settings-module=cookiecutter.settings
