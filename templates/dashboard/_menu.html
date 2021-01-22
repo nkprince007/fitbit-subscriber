@@ -2,37 +2,55 @@
   .patients-info-table {
     table-layout: fixed;
   }
+
+  #patients-list {
+    max-height: 15vmin;
+    margin-bottom: 10px;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
 </style>
 
 <div class="menu p-3 d-flex flex-column">
-  <div class="form-group">
-    <label for="global--time-period-selector">Time period</label>
-    <select class="form-control" id="global--time-period-selector">
-      <option value="7">Last week</option>
-      <option value="14">Last 2 weeks</option>
-      <option value="30">Last month</option>
-      <option value="60">Last 2 months</option>
-      <option value="90">Last 3 months</option>
-    </select>
-  </div>
-
-  <form class="form-inline d-flex">
-    <input class="form-control flex-fill" type="search" placeholder="Search" aria-label="Search">
-    <button class="btn btn-primary ml-2" type="submit">
-      <i class="fa fa-search" aria-hidden="true"></i>
-    </button>
+  <form id="global-config-form" method="GET" action="" class="">
+    <div class="form-group">
+      <label for="global-search">Patient search</label>
+      <input
+        class="form-control flex-fill"
+        type="search"
+        placeholder="Search"
+        aria-label="Search"
+        id="global-search"
+        name="patientId"
+      />
+    </div>
+    <div class="form-group">
+      <label for="global--time-period-selector">Time period</label>
+      <select
+        name="period"
+        class="form-control"
+        id="global--time-period-selector"
+      >
+        <option value="7">Last week</option>
+        <option value="14">Last 2 weeks</option>
+        <option value="30">Last month</option>
+        <option value="60">Last 2 months</option>
+        <option value="90">Last 3 months</option>
+      </select>
+    </div>
+    <div class="submit-button d-flex">
+      <button type="submit" class="btn btn-primary mx-auto">Submit</button>
+    </div>
   </form>
 
   <div id="patients-list" class="list-group">
-    <button data-patient-id="1" class="py-1 list-group-item list-group-item-action btn-primary active">Patient 1</button>
-    <button data-patient-id="2" class="py-1 list-group-item list-group-item-action btn-primary">Patient 2</button>
-    <button data-patient-id="3" class="py-1 list-group-item list-group-item-action btn-primary">Patient 3</button>
-    <button data-patient-id="4" class="py-1 list-group-item list-group-item-action btn-primary">Patient 4</button>
-    <button data-patient-id="5" class="py-1 list-group-item list-group-item-action btn-primary">Patient 5</button>
   </div>
 
   <div class="mt-3" id="patients-info">
-    <table class="card patients-info-table table table-light" id="patient-details">
+    <table
+      class="card patients-info-table table table-light"
+      id="patient-details"
+    >
       <thead>
         <tr>
           <th class="m-0 p-0">
@@ -61,25 +79,94 @@
 </div>
 
 <script>
-  let globalTimePeriod = 0;
+  let globalConfigForm;
+  let globalSearchInput;
+  let globalPeriodInput;
+  let globalPatientsList;
 
-  $(document).ready(function () {
-    const patientsList = $('#patients-list');
-    const buttons = patientsList.find('.list-group-item-action')
+  const choosePatient = (btn) => {
+    const buttons = globalPatientsList.find(".list-group-item-action");
+    buttons.each((_, el) => el.classList.remove("active"));
+    btn.classList.add("active");
+    const patientId = parseInt($(btn).data("patientId"));
+
+    globalSearchInput.val(patientId);
+    globalConfigForm.submit();
+  };
+
+  const choosePeriod = (period) => {
+    globalConfigForm.submit();
+  }
+
+  const configureForm = () => {
+    const data = Object.fromEntries(new URLSearchParams(window.location.search.replace('?', '')));
+    const buttons = globalPatientsList.find(".list-group-item-action");
+    buttons.each((_, el) => el.classList.remove("active"));
+
+    if (!!data['patientId']) {
+      const btn = buttons.filterByData('patientId', data['patientId'])[0];
+      if (btn) {
+        btn.classList.add("active");
+        globalSearchInput.val(data['patientId']);
+      }
+    } else {
+      const btn = buttons[0];
+      if (btn) {
+        btn.classList.add("active");
+        globalSearchInput.val($(btn).data('patientId'));
+        globalConfigForm.submit();
+      }
+    }
+
+    if (!!data['period']) {
+      globalPeriodInput.val(data['period']);
+    }
+  }
+
+  const addListeners = () => {
+    const buttons = globalPatientsList.find(".list-group-item-action");
     buttons.each((_, btn) => {
       $(btn).click(() => {
-        buttons.each((_, el) => el.classList.remove('active'));
-        btn.classList.add('active');
-        choosePatient($(btn).data('patientId'));
+        choosePatient(btn);
       });
     });
 
-    const selected = $('#global--time-period-selector option:selected').val();
-    globalTimePeriod = parseInt(selected, 10);
-
-    $("#global--time-period-selector").change(function() {
-      const selected = $('#global--time-period-selector option:selected').val();
-      globalTimePeriod = parseInt(selected, 10);
+    globalPeriodInput.change(function (event) {
+      choosePeriod(event.target.value);
     });
+
+    configureForm();
+  }
+
+  const populatePatients = (patients) => {
+    globalPatientsList.empty();
+    patients.forEach(patient => {
+      const btn = document.createElement('button');
+      btn.classList.add('py-1', 'list-group-item', 'list-group-item-action', 'btn-primary');
+      btn.dataset.patientId = patient.id;
+      btn.innerText = `Patient ${patient.id}`;
+      globalPatientsList.append(btn);
+    });
+
+    addListeners();
+  }
+
+  $(document).ready(function () {
+    $.fn.filterByData = function(prop, val) {
+      return this.filter(
+        function() { return $(this).data(prop)==val; }
+      );
+    };
+
+    globalConfigForm = $('#global-config-form');
+    globalSearchInput = $('#global-search');
+    globalPeriodInput = $("#global--time-period-selector");
+    globalPatientsList = $('#patients-list')
+
+    addListeners();
+
+    // randomly populating patients
+    const length = Math.max(Math.floor(Math.random() * 10), 3);
+    populatePatients(Array.from({length}, (_, i) => ({id: i + 1})));
   });
 </script>
