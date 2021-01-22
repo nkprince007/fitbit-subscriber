@@ -13,5 +13,5 @@ release:
   command:
     - python3 manage.py migrate --no-input
 run:
-  web: ./bin/entrypoint-heroku.sh
-  worker: ./bin/entrypoint-worker.sh
+  web: ./bin/heroku/entrypoint.sh
+  worker: ./bin/heroku/entrypoint-worker.sh
