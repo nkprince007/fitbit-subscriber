@@ -155,15 +155,22 @@
     const sexEl = $('#patient--sex');
     const nameEl = $('#patient--name');
     const ageEl = $('#patient--age');
-    const resp = await fetch('https://api.randomuser.me');
-    const data = await resp.json();
-    // TODO: fetch real patient data here
-    const patient = data.results[0];
-    nameEl.text(`${patient.name.title}. ${patient.name.first} ${patient.name.last}`);
-    ageEl.text(patient.dob.age);
-    sexEl.text(patient.gender);
 
-    redrawActivityHeatmap();
+    // TODO: fetch real patient data here
+    const patient = (await axios({
+      method: 'post',
+      data: {patientId},
+      url: "{% url 'patient_details' %}",
+    })).data;
+    const title = patient.sex.toLowerCase() === 'male' ? "Mr" : 'Mrs'
+    nameEl.text(`${title}. ${patient.name}`);
+    ageEl.text(patient.age);
+    sexEl.text(patient.sex);
+
+    redrawActivityHeatmap({
+      patientId: parseInt(patientId, 10),
+      period: globalPeriodInput.val(),
+    });
   }
 
   const populatePatients = (patients) => {
@@ -194,7 +201,6 @@
     addListeners();
 
     // randomly populating patients
-    const length = Math.max(Math.floor(Math.random() * 10), 3);
-    populatePatients(Array.from({length}, (_, i) => ({id: i + 1})));
+    populatePatients(Array.from({length: 4}, (_, i) => ({id: i + 1})));
   });
 </script>

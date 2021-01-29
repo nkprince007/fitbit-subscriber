@@ -6,7 +6,7 @@
 </div>
 
 <script>
-  function redrawActivityHeatmap() {
+  function redrawActivityHeatmap({period, patientId}) {
     const heatmapEl = $('#activity-heatmap');
 
     // Labels of row and columns
@@ -50,16 +50,21 @@
       .domain([1, 100]);
 
     // Read the data
-    d3.csv("{% static 'heatmap_data.csv' %}", data => {
-      svg.selectAll()
-        .data(data, function (d) { return d.weekIndex + ':' + d.weekDay; })
-        .enter()
-        .append("rect")
-        .attr("x", function (d) { return x(d.weekIndex) })
-        .attr("y", function (d) { return y(d.weekDay) })
-        .attr("width", x.bandwidth())
-        .attr("height", y.bandwidth())
-        .style("fill", function (d) { return myColor(d.value) });
-    });
+    axios({
+      method: 'post',
+      url: "{% url 'activity_summary' %}",
+      data: {period, patientId},
+    })
+      .then(({data}) => {
+        svg.selectAll()
+          .data(data, function (d) { return d.weekIndex + ':' + d.weekDay; })
+          .enter()
+          .append("rect")
+          .attr("x", function (d) { return x(d.weekIndex) })
+          .attr("y", function (d) { return y(d.weekDay) })
+          .attr("width", x.bandwidth())
+          .attr("height", y.bandwidth())
+          .style("fill", function (d) { return myColor(d.value) });
+      });
   }
 </script>

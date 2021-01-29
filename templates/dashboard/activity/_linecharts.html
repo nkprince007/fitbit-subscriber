@@ -47,18 +47,26 @@ d3.csv("{% static 'activity_linecharts.csv' %}", function(data) {
             "translate(" + margin.left + "," + margin.top + ")");
 
   // Add X axis --> it is a date format
-  var x = d3.scaleLinear()
-    .domain(d3.extent(data, function(d) { return d.year; }))
+  var x = d3.scaleTime()
+    .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
     .range([ 0, width ]);
+
   svg
     .append("g")
     .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x).ticks(3));
+    .call(d3.axisBottom(x).ticks(3))
+    .selectAll("text")
+    .attr("y", 0)
+    .attr("x", 9)
+    .attr("dy", ".35em")
+    .attr("transform", "rotate(90)")
+    .style("text-anchor", "start");
 
   //Add Y axis
   var y = d3.scaleLinear()
     .domain([0, d3.max(data, function(d) { return +d.n; })])
     .range([ height, 0 ]);
+
   svg.append("g")
     .call(d3.axisLeft(y).ticks(5));
 
@@ -75,8 +83,8 @@ d3.csv("{% static 'activity_linecharts.csv' %}", function(data) {
       .attr("stroke-width", 1)
       .attr("d", function(d){
         return d3.line()
-          .x(function(d) { return x(d.year); })
-          .y(function(d) { return y(+d.n); })
+          .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+          .y(d => y(+d.n))
           (d.values)
       })
 

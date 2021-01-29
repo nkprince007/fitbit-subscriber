@@ -24,6 +24,7 @@ urlpatterns = [
     path('webhook/', webhook_listen),
     path('admin/', admin.site.urls),
     path('auth/', include('fitbit_auth.urls')),
+    path('data/', include('fitbit_data.urls')),
     path('home/', dashboard, name='home'),
     path('', index, name='root'),
 ]
