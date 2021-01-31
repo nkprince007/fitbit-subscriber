@@ -2,11 +2,13 @@
 <div id="nutrition-bar-plot"></div>
 
 <script>
-function drawNutritionBarPlots() {
+function redrawNutritionBarPlots({period, patientId}) {
+  const barPlotEl = $('#nutrition-bar-plot');
+
   // set the dimensions and margins of the graph
   var margin = {top: 20, right: 30, bottom: 20, left: 50},
-      width = 460 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+      width = barPlotEl.width() - margin.left - margin.right,
+      height = 200 - margin.top - margin.bottom;
 
   // append the svg object to the body of the page
   var svg = d3.select("#nutrition-bar-plot")
@@ -18,13 +20,13 @@ function drawNutritionBarPlots() {
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-  // Parse the Data
-  d3.csv("{% static 'nutrition_barchart_data.csv' %}", function(data) {
-    // List of subgroups = header of the csv files = soil condition here
-    var subgroups = data.columns.slice(1)
-
-    // List of groups = species here = value of the first column called group -> I show them on the X axis
-    var groups = d3.map(data, d => d.group).keys()
+  axios({
+    method: 'post',
+    url: "{% url 'calorie_count' %}",
+    data: {period, patientId}
+  }).then(({data}) => {
+    const subgroups = ['current_value', 'optimal_value'];
+    const groups = d3.map(data, d => d.date).keys().map(d => moment(d, 'DD/MM/YYYY').toDate());
 
     // Add X axis
     var x = d3.scaleBand()
@@ -34,9 +36,15 @@ function drawNutritionBarPlots() {
 
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).tickSizeOuter(0));
+      .call(
+        d3.axisBottom(x)
+          .tickValues(x.domain().filter((d,i) => !(i%5)))
+          .tickFormat((d) => { console.log(d); return moment(d).format("MMM Do YY")})
+      );
 
-    const yMax = d3.max(data.map(x => subgroups.map(g => parseInt(x[g])).reduce((total, v) => total + v, 0)));
+    const yMax = d3.max(data
+        .map(x => subgroups.map(g => parseInt(x[g]))
+        .reduce((total, v) => total + v, 0)));
 
     // Add Y axis
     var y = d3.scaleLinear()
@@ -57,9 +65,7 @@ function drawNutritionBarPlots() {
       .text("Calories in/out")
 
     //stack the data? --> stack per subgroup
-    var stackedData = d3.stack()
-      .keys(subgroups)
-      (data)
+    var stackedData = d3.stack().keys(subgroups)(data)
 
     // Show the bars
     svg.append("g")
@@ -72,12 +78,10 @@ function drawNutritionBarPlots() {
         // enter a second time = loop subgroup per subgroup to add all rectangles
         .data(d => d)
         .enter().append("rect")
-          .attr("x", d => x(d.data.group))
+          .attr("x", d => x(moment(d.data.date, 'DD/MM/YYYY').toDate()))
           .attr("y", d => y(d[1]))
           .attr("height", d => y(d[0]) - y(d[1]))
           .attr("width", x.bandwidth())
   });
 }
-
-drawNutritionBarPlots();
 </script>
