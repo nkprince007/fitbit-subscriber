@@ -2,9 +2,7 @@
 
 <style>
   #activity-zones {
-    max-width: 400px;
-    max-height: 300px;
-    padding: 8px;
+    padding: 0 8px;
   }
 </style>
 
@@ -24,7 +22,7 @@ function redrawActivityZones({period, patientId}) {
   // set the dimensions and margins of the graph
   var margin = {top: 20, right: 15, bottom: 75, left: 30},
       width = activityZonesEl.width() - margin.left - margin.right,
-      height = activityZonesEl.width() * 12/16 - margin.top - margin.bottom;
+      height = activityZonesEl.width() / 3 - margin.top - margin.bottom;
 
   // append the svg object to the body of the page
   var svg = d3.select("#activity-zones")
@@ -178,28 +176,29 @@ function redrawActivityZones({period, patientId}) {
       //////////
 
       // Add one dot in the legend for each name.
-      var size = 16
-      svg.selectAll("myrect")
+      const size = 16
+      const groups = svg.selectAll("labels")
         .data(keys)
         .enter()
-        .append("rect")
-          .attr("x", function(d,i) {return i%2 != 0 ? 0 : width*0.5;})
-          .attr("y", function(d,i){ return height + margin.bottom - (size) * (i%2!=0 ? i : i+1)}) // 100 is where the first dot appears. 25 is the distance between dots
-          .attr("width", size)
-          .attr("height", size)
-          .attr('rx', size/2)
-          .attr('ry', size/2)
-          .style("fill", function(d){ return color(d)})
-          .on("mouseover", highlight)
-          .on("mouseleave", noHighlight)
+          .append("g")
+          .attr("class", "label")
+          .attr("transform", (_,i) => `translate(
+            ${(i) * width*0.25 + width * 0.25/2},
+            ${height + margin.bottom - (2*size)}
+          )`)
 
-      // Add one dot in the legend for each name.
-      svg.selectAll("mylabels")
-        .data(keys)
-        .enter()
-        .append("text")
-          .attr("x", function(d,i) {return size*1.2 + (i%2 != 0 ? 0 : width*0.5);})
-          .attr("y", function(d,i){ return height + margin.bottom - (size) * (i%2!=0 ? i : i+1) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
+      groups.append("rect")
+        .attr("width", size)
+        .attr("height", size)
+        .attr('rx', size/2)
+        .attr('ry', size/2)
+        .attr('y', -size/2)
+        .attr('x', -size*1.25)
+        .style("fill", function(d){ return color(d)})
+        .on("mouseover", highlight)
+        .on("mouseleave", noHighlight)
+
+        groups.append("text")
           .style("fill", function(d){ return color(d)})
           .text(function(d){ return d})
           .attr("text-anchor", "left")

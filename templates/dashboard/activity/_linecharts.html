@@ -2,10 +2,8 @@
 
 <style>
   #activity-charts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(2, 1fr);
-    padding: 4px;
+    display: flex;
+    flex-direction: row;
   }
 </style>
 
@@ -19,8 +17,8 @@ const activityChartsEl = $('#activity-charts');
 
 // set the dimensions and margins of the graph
 var margin = {top: 30, right: 0, bottom: 30, left: 50},
-    width = activityChartsEl.width() / 2 - margin.left - margin.right,
-    height = activityChartsEl.width() / 2 - margin.top - margin.bottom;
+    width = activityChartsEl.width() / 4 - margin.left - margin.right,
+    height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
 //Read the data
 d3.csv("{% static 'activity_linecharts.csv' %}", function(data) {

@@ -1,58 +1,63 @@
 <style>
-  .main .activity-grid {
+  .activity-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main {
     display: grid;
-    grid-template-columns: 3fr 4fr;
     grid-template-rows: 1fr;
-    align-items: center;
+    grid-template-columns: 3fr 2fr;
   }
 
-  /* .activity {
-    grid-area: activity;
+  .main .grid-item {
+    border: 1px solid #dadadada;
   }
 
-  .nutrition {
-    grid-area: nutrition;
-  }
-
-  .body-weight-fat {
-    grid-area: body;
+  .main .section-title {
+    padding: .25rem;
   }
 
   .heart-sleep {
-    grid-area: heart-sleep;
-  } */
+    display: flex;
+    flex-direction: column;
+  }
 </style>
 
 <div class="main">
-  <div class="grid-item activity">
-    <h6 class="section-title">Activity</h6>
-    <div class="activity-grid">
-      <div>
-        {% include 'dashboard/activity/_areachart.html' %}
+  <div class="left-col">
+    <div class="grid-item activity">
+      <h6 class="section-title">Activity</h6>
+      <div class="activity-grid">
+        <div>
+          {% include 'dashboard/activity/_areachart.html' %}
+        </div>
+        <div>
+          {% include 'dashboard/activity/_linecharts.html' %}
+        </div>
       </div>
+    </div>
+    <div class="grid-item body-weight-fat">
+      <h6 class="section-title">Body Weight & Fat</h6>
       <div>
-        {% include 'dashboard/activity/_linecharts.html' %}
+        {% include 'dashboard/body_weight_fat/_linecharts.html' %}
       </div>
     </div>
   </div>
-  <div class="grid-item nutrition">
-    <h6 class="section-title">Nutrition</h6>
-    <div>
-      {% include 'dashboard/nutrition/_stacked_bar_charts.html' %}
+  <div class="right-col">
+    <div class="grid-item nutrition">
+      <h6 class="section-title">Nutrition</h6>
+      <div>
+        {% include 'dashboard/nutrition/_stacked_bar_charts.html' %}
+      </div>
     </div>
-  </div>
-  <div class="grid-item body-weight-fat">
-    <h6 class="section-title">Body Weight & Fat</h6>
-    <div>
-      {% include 'dashboard/body_weight_fat/_linecharts.html' %}
-    </div>
-  </div>
-  <div class="dual-section heart-sleep">
-    <div class="grid-item">
-      <h6 class="section-title">Heart Rate</h6>
-    </div>
-    <div class="grid-item sleep-cycles">
-      <h6 class="section-title">Sleep Cycles</h6>
+    <div class="dual-section heart-sleep">
+      <div class="grid-item">
+        <h6 class="section-title">Heart Rate</h6>
+      </div>
+      <div class="grid-item sleep-cycles">
+        <h6 class="section-title">Sleep Cycles</h6>
+      </div>
     </div>
   </div>
 </div>

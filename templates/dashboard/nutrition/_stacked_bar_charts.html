@@ -39,7 +39,7 @@ function redrawNutritionBarPlots({period, patientId}) {
       .call(
         d3.axisBottom(x)
           .tickValues(x.domain().filter((d,i) => !(i%5)))
-          .tickFormat((d) => { console.log(d); return moment(d).format("MMM Do YY")})
+          .tickFormat((d) => moment(d).format("MMM Do YY"))
       );
 
     const yMax = d3.max(data
