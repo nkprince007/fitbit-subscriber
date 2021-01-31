@@ -18,7 +18,7 @@ function keyize(str) {
   return str.replace(/\s+/g, '-').toLowerCase();
 }
 
-function redrawAreaChart() {
+function redrawActivityZones({period, patientId}) {
   const activityZonesEl = $('#activity-zones');
 
   // set the dimensions and margins of the graph
@@ -36,26 +36,30 @@ function redrawAreaChart() {
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-  // Parse the Data
-  d3.csv("{% static 'activity_areachart_data.csv' %}", function(data) {
+  axios({
+    method: 'post',
+    url: "{% url 'activity_zones' %}",
+    data: {period, patientId}
+  }).then(({data}) => {
+    if (data.length <= 0) return;
+
     // List of groups = header of the csv files
-    var keys = data.columns.slice(1, 5);
+    var keys = Object.keys(data[0]).filter(k => k != 'date');
 
     // color palette
     var color = d3.scaleOrdinal()
       .domain(keys)
       .range(d3.schemeCategory20);
 
-    var stackedData = d3.stack()
-      .keys(keys)(data)
+    var stackedData = d3.stack().keys(keys)(data)
 
     //////////
     // AXIS //
     //////////
 
     // Add X axis
-    var x = d3.scaleLinear()
-      .domain(d3.extent(data, function(d) { return d.year; }))
+    var x = d3.scaleTime()
+      .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
       .range([ 0, width ]);
     var xAxis = svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -107,9 +111,9 @@ function redrawAreaChart() {
 
     // Area generator
     var area = d3.area()
-      .x(function(d) { return x(d.data.year); })
-      .y0(function(d) { return y(d[0]); })
-      .y1(function(d) { return y(d[1]); })
+      .x(({data}) => x(moment(data.date, 'DD/MM/YYYY').toDate()))
+      .y0(d => y(d[0]))
+      .y1(d => y(d[1]))
 
     // Show the areas
     areaChart
@@ -138,7 +142,7 @@ function redrawAreaChart() {
       // If no selection, back to initial coordinate. Otherwise, update X axis domain
       if(!extent){
         if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
-        x.domain(d3.extent(data, function(d) { return d.year; }))
+        x.domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
       }else{
         x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
         areaChart.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
@@ -151,8 +155,6 @@ function redrawAreaChart() {
         .transition().duration(1000)
         .attr("d", area)
       }
-
-
 
       //////////
       // HIGHLIGHT GROUP //
@@ -170,8 +172,6 @@ function redrawAreaChart() {
       var noHighlight = function(d){
         d3.selectAll(".myArea").style("opacity", 1)
       }
-
-
 
       //////////
       // LEGEND //
@@ -209,6 +209,4 @@ function redrawAreaChart() {
           .on("mouseleave", noHighlight)
   });
 }
-
-redrawAreaChart();
 </script>

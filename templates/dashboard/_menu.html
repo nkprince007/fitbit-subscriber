@@ -167,10 +167,12 @@
     ageEl.text(patient.age);
     sexEl.text(patient.sex);
 
-    redrawActivityHeatmap({
+    const data = {
       patientId: parseInt(patientId, 10),
       period: globalPeriodInput.val(),
-    });
+    };
+    redrawActivityHeatmap(data);
+    redrawActivityZones(data);
   }
 
   const populatePatients = (patients) => {
