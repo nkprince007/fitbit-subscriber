@@ -17,6 +17,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     curl \
     postgresql-client \
+    libpq-dev \
     openssh-server openssh-client \
     bash \
     iproute2 \
@@ -27,7 +28,10 @@ RUN pip install --no-cache-dir --upgrade pip
 
 ADD requirements.txt $APP_ROOT
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get install --no-install-recommends -y build-essential && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y build-essential && \
+    apt-get clean
 
 ADD . $APP_ROOT
 

@@ -23,6 +23,7 @@ RUN useradd -d $APP_ROOT -r $APP_USER
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     postgresql-client \
+    libpq-dev \
     && \
     apt-get clean
 
@@ -30,7 +31,10 @@ RUN pip install --no-cache-dir --upgrade pip
 
 ADD requirements.txt $APP_ROOT
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get install --no-install-recommends -y build-essential && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y build-essential && \
+    apt-get clean
 
 ADD . $APP_ROOT
 
