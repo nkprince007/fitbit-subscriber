@@ -17,7 +17,7 @@ function redrawActivityMetrics({period, patientId}) {
   const activityChartsEl = $('#activity-charts');
 
   // set the dimensions and margins of the graph
-  var margin = {top: 30, right: 10, bottom: 30, left: 30},
+  const margin = {top: 30, right: 10, bottom: 30, left: 30},
       width = activityChartsEl.width() / 4 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
@@ -28,7 +28,7 @@ function redrawActivityMetrics({period, patientId}) {
     data: {period, patientId},
   }).then(({data}) => {
     // group the data: I want to draw one line per group
-    var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+    const sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
       .key(function(d) { return d.metric;})
       .entries(data);
 
@@ -36,7 +36,7 @@ function redrawActivityMetrics({period, patientId}) {
     allKeys = sumstat.map(function(d){return d.key})
 
     // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
-    var svg = d3.select("#activity-charts")
+    const svg = d3.select("#activity-charts")
       .selectAll("uniqueChart")
       .data(sumstat)
       .enter()
@@ -49,7 +49,7 @@ function redrawActivityMetrics({period, patientId}) {
               "translate(" + margin.left + "," + margin.top + ")");
 
     // Add X axis --> it is a date format
-    var x = d3.scaleTime()
+    const x = d3.scaleTime()
       .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
       .range([ 0, width ]);
 
@@ -59,15 +59,19 @@ function redrawActivityMetrics({period, patientId}) {
       .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('MMM D')))
 
     //Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => +d.value)])
-      .range([ height, 0 ]);
-
+    const yAxes = {};
     svg.append("g")
-      .call(d3.axisLeft(y).ticks(5));
+      .each(function (s) {
+        const svg1 = d3.select(this);
+        const y = d3.scaleLinear()
+          .domain(d3.extent(s.values.map(s => +s.value)))
+          .range([ height, 0 ]);
+        yAxes[s.key] = y;
+        svg1.call(d3.axisLeft(y).ticks(5));
+      });
 
     // color palette
-    var color = d3.scaleOrdinal()
+    const color = d3.scaleOrdinal()
       .domain(allKeys)
       .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
@@ -77,12 +81,16 @@ function redrawActivityMetrics({period, patientId}) {
         .attr("fill", "none")
         .attr("stroke", 'black')
         .attr("stroke-width", 1)
-        .attr("d", function(d){
-          return d3.line()
-            .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-            .y(d => y(+d.value))
-            (d.values)
-        })
+        .each(function (s) {
+          const path = d3.select(this);
+          const y = yAxes[s.key];
+          path.attr("d", (d) => (
+            d3.line()
+              .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+              .y(d => y(+d.value))
+              (d.values)
+          ));
+        });
 
     // Add titles
     svg
@@ -90,7 +98,7 @@ function redrawActivityMetrics({period, patientId}) {
       .attr("text-anchor", "middle")
       .attr("y", -5)
       .attr("x", width/2)
-      .text(function(d){ return(d.key)})
+      .text(d => d.key)
   })
 }
 </script>

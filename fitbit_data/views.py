@@ -68,8 +68,8 @@ def get_activity_metrics(request):
     patient_id = get_patient_id(request)
     metrics = ['Flights climbed',
                'Step Count',
-               'Distance travelled',
-               'Active Duration']
+               'Distance travelled (m)',
+               'Active Duration (hrs)']
 
     return Response([
         {
@@ -94,4 +94,23 @@ def get_calorie_count(request):
             'optimal_value': randint(0, 100),
         }
         for i in range(period)
+    ])
+
+
+@api_view(('POST',))
+def get_body_weight_fat_metrics(request):
+    period = get_period(request)
+    patient_id = get_patient_id(request)
+    metrics = ['Body Weight (pounds)',
+               'Body Fat (%)',
+               'Body Mass Index (BMI)']
+
+    return Response([
+        {
+            'date': format_date(datetime.today() - timedelta(i)),
+            'metric': metric,
+            'value': randint(50, 200) if metric != 'Body Fat (%)' else randint(10, 100),
+        }
+        for i in range(period)
+        for metric in metrics
     ])
