@@ -26,7 +26,9 @@ function redrawNutritionBarPlots({period, patientId}) {
     data: {period, patientId}
   }).then(({data}) => {
     const subgroups = ['current_value', 'optimal_value'];
-    const groups = d3.map(data, d => d.date).keys().map(d => moment(d, 'DD/MM/YYYY').toDate());
+    const groups =
+      d3.map(data, d => d.date).keys().map(d => moment(d, 'DD/MM/YYYY').toDate())
+        .reverse();
 
     // Add X axis
     var x = d3.scaleBand()
@@ -39,7 +41,7 @@ function redrawNutritionBarPlots({period, patientId}) {
       .call(
         d3.axisBottom(x)
           .tickValues(x.domain().filter((d,i) => !(i%5)))
-          .tickFormat((d) => moment(d).format("MMM Do YY"))
+          .tickFormat((d) => moment(d).format("MMM D"))
       );
 
     const yMax = d3.max(data
