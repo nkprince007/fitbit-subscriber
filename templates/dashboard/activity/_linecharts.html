@@ -13,85 +13,84 @@
 </div>
 
 <script>
-const activityChartsEl = $('#activity-charts');
+function redrawActivityMetrics({period, patientId}) {
+  const activityChartsEl = $('#activity-charts');
 
-// set the dimensions and margins of the graph
-var margin = {top: 30, right: 0, bottom: 30, left: 50},
-    width = activityChartsEl.width() / 4 - margin.left - margin.right,
-    height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
+  // set the dimensions and margins of the graph
+  var margin = {top: 30, right: 0, bottom: 30, left: 50},
+      width = activityChartsEl.width() / 4 - margin.left - margin.right,
+      height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
-//Read the data
-d3.csv("{% static 'activity_linecharts.csv' %}", function(data) {
+  //Read the data
+  axios({
+    method: 'post',
+    url: "{% url 'activity_metrics' %}",
+    data: {period, patientId},
+  }).then(({data}) => {
+    // group the data: I want to draw one line per group
+    var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+      .key(function(d) { return d.metric;})
+      .entries(data);
 
-  // group the data: I want to draw one line per group
-  var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
-    .key(function(d) { return d.name;})
-    .entries(data);
+    // What is the list of groups?
+    allKeys = sumstat.map(function(d){return d.key})
 
-  // What is the list of groups?
-  allKeys = sumstat.map(function(d){return d.key})
+    // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
+    var svg = d3.select("#activity-charts")
+      .selectAll("uniqueChart")
+      .data(sumstat)
+      .enter()
+      .append("svg")
+        .attr('font-size', '12px')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
 
-  // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
-  var svg = d3.select("#activity-charts")
-    .selectAll("uniqueChart")
-    .data(sumstat)
-    .enter()
-    .append("svg")
-      .attr('font-size', '12px')
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+    // Add X axis --> it is a date format
+    var x = d3.scaleTime()
+      .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
+      .range([ 0, width ]);
 
-  // Add X axis --> it is a date format
-  var x = d3.scaleTime()
-    .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
-    .range([ 0, width ]);
+    svg
+      .append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('M/D')))
 
-  svg
-    .append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x).ticks(3))
-    .selectAll("text")
-    .attr("y", 0)
-    .attr("x", 9)
-    .attr("dy", ".35em")
-    .attr("transform", "rotate(90)")
-    .style("text-anchor", "start");
+    //Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => +d.value)])
+      .range([ height, 0 ]);
 
-  //Add Y axis
-  var y = d3.scaleLinear()
-    .domain([0, d3.max(data, function(d) { return +d.n; })])
-    .range([ height, 0 ]);
+    svg.append("g")
+      .call(d3.axisLeft(y).ticks(5));
 
-  svg.append("g")
-    .call(d3.axisLeft(y).ticks(5));
+    // color palette
+    var color = d3.scaleOrdinal()
+      .domain(allKeys)
+      .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
-  // color palette
-  var color = d3.scaleOrdinal()
-    .domain(allKeys)
-    .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+    // Draw the line
+    svg
+      .append("path")
+        .attr("fill", "none")
+        .attr("stroke", 'black')
+        .attr("stroke-width", 1)
+        .attr("d", function(d){
+          return d3.line()
+            .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+            .y(d => y(+d.value))
+            (d.values)
+        })
 
-  // Draw the line
-  svg
-    .append("path")
-      .attr("fill", "none")
-      .attr("stroke", 'black')
-      .attr("stroke-width", 1)
-      .attr("d", function(d){
-        return d3.line()
-          .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-          .y(d => y(+d.n))
-          (d.values)
-      })
-
-  // Add titles
-  svg
-    .append("text")
-    .attr("text-anchor", "middle")
-    .attr("y", -5)
-    .attr("x", width/2)
-    .text(function(d){ return(d.key)})
-})
+    // Add titles
+    svg
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("y", -5)
+      .attr("x", width/2)
+      .text(function(d){ return(d.key)})
+  })
+}
 </script>

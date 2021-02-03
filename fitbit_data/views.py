@@ -63,6 +63,26 @@ def get_activity_zones(request):
 
 
 @api_view(('POST',))
+def get_activity_metrics(request):
+    period = get_period(request)
+    patient_id = get_patient_id(request)
+    metrics = ['Flights climbed',
+               'Step Count',
+               'Distance travelled',
+               'Active Duration']
+
+    return Response([
+        {
+            'date': format_date(datetime.today() - timedelta(i)),
+            'metric': metric,
+            'value': randint(50, 200)
+        }
+        for i in range(period)
+        for metric in metrics
+    ])
+
+
+@api_view(('POST',))
 def get_calorie_count(request):
     period = min(get_period(request), 30)
     patient_id = get_patient_id(request)
