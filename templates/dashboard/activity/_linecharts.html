@@ -17,7 +17,7 @@ function redrawActivityMetrics({period, patientId}) {
   const activityChartsEl = $('#activity-charts');
 
   // set the dimensions and margins of the graph
-  var margin = {top: 30, right: 0, bottom: 30, left: 50},
+  var margin = {top: 30, right: 10, bottom: 30, left: 30},
       width = activityChartsEl.width() / 4 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
@@ -56,7 +56,7 @@ function redrawActivityMetrics({period, patientId}) {
     svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('M/D')))
+      .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('MMM D')))
 
     //Add Y axis
     var y = d3.scaleLinear()
