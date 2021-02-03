@@ -1,4 +1,11 @@
+from datetime import datetime
+from typing import Optional
+
 from fitbit_data.exceptions import InvalidPatientIdException, InvalidPeriodException
+
+
+def format_date(date: datetime, fmt: Optional[str] = '%d/%m/%Y') -> str:
+    return date.strftime(fmt)
 
 
 def get_patient_id(request):

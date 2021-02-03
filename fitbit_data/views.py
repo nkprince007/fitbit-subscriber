@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from fitbit_data.utils import get_patient_id, get_period
+from fitbit_data.utils import get_patient_id, get_period, format_date
 
 
 def dashboard(request):
@@ -25,14 +25,22 @@ def get_activity_summary(request):
     patient_id = get_patient_id(request)
 
     num_weeks = period // 7
-    week_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    week_days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    today = datetime.today()
+    week_day_index = (today.weekday() + 1) % 7
+    last_sun = today - timedelta(7 + week_day_index)
+    last_sat = today - timedelta(7 + week_day_index - 6)
     return Response([
         {
-            'weekIndex': -i,
+            'weekIndex': -week_index,
             'weekDay': week_day,
+            'weekRange': {
+                'start': format_date(last_sun - timedelta(weeks=week_index)),
+                'end': format_date(last_sat - timedelta(weeks=week_index)),
+            },
             'value': randint(0, 100),
         }
-        for i in range(num_weeks)
+        for week_index in range(num_weeks)
         for week_day in week_days
     ])
 
@@ -44,7 +52,7 @@ def get_activity_zones(request):
 
     return Response([
         {
-            'date': (datetime.today() - timedelta(i)).strftime('%d/%m/%Y'),
+            'date': format_date(datetime.today() - timedelta(i)),
             'Sedentary': randint(0, 100),
             'Lightly active': randint(0, 100),
             'Fairly active': randint(0, 100),
@@ -61,7 +69,7 @@ def get_calorie_count(request):
 
     return Response([
         {
-            'date': (datetime.today() - timedelta(i)).strftime('%d/%m/%Y'),
+            'date': format_date(datetime.today() - timedelta(i)),
             'current_value': randint(0, 100),
             'optimal_value': randint(0, 100),
         }
