@@ -5,12 +5,56 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 1fr;
-    padding: 4px;
+    padding: 4px 4px 0px 4px;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .label-box {
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  .label-box.red {
+    background-color: rgb(255, 127, 14);
+  }
+
+  .label-box.blue {
+    background-color: rgb(31, 119, 180);
+    border-radius: 0;
+  }
+
+  .label {
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .label .label-name {
+    font-size: .75em;
   }
 </style>
 
 <div class="">
   <div id="body-weight-fat-charts"></div>
+  <div class="legend">
+    <div class="label">
+      <div class="label-box red"></div>
+      <div class="label-name">Data from Smart Scale</div>
+    </div>
+    <div class="label">
+      <div class="label-box blue"></div>
+      <div class="label-name">Manually entered data</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -114,7 +158,7 @@ function redrawBodyWeightFatCharts({period, patientId}) {
         .data(apiValues)
         .enter();
       cgCircle.append('circle')
-        .attr('fill', 'red')
+        .attr('fill', 'rgb(255, 127, 14)')
         .attr('r', 4)
         .attr('cx', d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
         .attr('cy', d => y(+d.value));
@@ -124,7 +168,7 @@ function redrawBodyWeightFatCharts({period, patientId}) {
         .data(manualValues)
         .enter();
       cgSquare.append('rect')
-        .attr('fill', 'blue')
+        .attr('fill', 'rgb(31, 119, 180)')
         .attr('width', 8)
         .attr('height', 8)
         .attr('transform', function() {
@@ -139,7 +183,7 @@ function redrawBodyWeightFatCharts({period, patientId}) {
     svg
       .append("text")
       .attr("text-anchor", "middle")
-      .attr("y", -5)
+      .attr("y", -21)
       .attr("x", width/2)
       .text(d => d.key)
   })
