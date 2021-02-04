@@ -14,11 +14,19 @@
 </div>
 
 <script>
+function generateIdForKey(key) {
+  return key
+    .toLowerCase()
+    .replaceAll(new RegExp(/\(.*\)/g), '')
+    .trim()
+    .replaceAll(new RegExp(/\s+/g), '-');
+}
+
 function redrawBodyWeightFatCharts({period, patientId}) {
   const activityChartsEl = $('#body-weight-fat-charts');
 
   // set the dimensions and margins of the graph
-  const margin = {top: 30, right: 0, bottom: 30, left: 40},
+  const margin = {top: 30, right: 20, bottom: 30, left: 30},
       width = activityChartsEl.width() / 3 - margin.left - margin.right,
       height = activityChartsEl.width() / 3 - margin.top - margin.bottom;
 
@@ -46,6 +54,7 @@ function redrawBodyWeightFatCharts({period, patientId}) {
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
+        .attr('id', d => generateIdForKey(d.key))
         .attr("transform",
               "translate(" + margin.left + "," + margin.top + ")");
 
@@ -58,7 +67,7 @@ function redrawBodyWeightFatCharts({period, patientId}) {
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('MMM D')));
 
-    //Add Y axis
+    // Add Y axis
     const yAxes = {};
     svg.append("g")
       .each(function (s) {
@@ -70,27 +79,61 @@ function redrawBodyWeightFatCharts({period, patientId}) {
         svg1.call(d3.axisLeft(y).ticks(5));
       });
 
-    // color palette
+    // Color palette
     const color = d3.scaleOrdinal()
       .domain(allKeys)
       .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
     // Draw the line
-    svg
-      .append("path")
-        .attr("fill", "none")
-        .attr("stroke", 'black')
-        .attr("stroke-width", 1)
-        .each(function (s) {
-          const path = d3.select(this);
-          const y = yAxes[s.key];
-          path.attr("d", (d) => (
-            d3.line()
-              .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-              .y(d => y(+d.value))
-              (d.values)
-          ));
-        });
+    svg.append("path")
+      .attr("fill", "none")
+      .attr("stroke", 'black')
+      .attr("stroke-width", 1)
+      .each(function (s) {
+        const path = d3.select(this);
+        const y = yAxes[s.key];
+        path.attr("d", (d) => (
+          d3.line()
+            .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+            .y(d => y(+d.value))
+            (d.values)
+        ));
+      });
+
+    svg.append('g')
+      .attr('id', d => `${generateIdForKey(d.key)}-value-group`);
+
+    // Draw circles
+    sumstat.forEach(set => {
+      const y = yAxes[set.key];
+      const apiValues = set.values.filter(v => v.metric_type === 'api');
+      const manualValues = set.values.filter(v => v.metric_type === 'manual');
+
+      const cgCircle = svg.select(`#${generateIdForKey(set.key)}-value-group`)
+        .selectAll('.circle-group')
+        .data(apiValues)
+        .enter();
+      cgCircle.append('circle')
+        .attr('fill', 'red')
+        .attr('r', 4)
+        .attr('cx', d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+        .attr('cy', d => y(+d.value));
+
+      const cgSquare = svg.select(`#${generateIdForKey(set.key)}-value-group`)
+        .selectAll('.square-group')
+        .data(manualValues)
+        .enter();
+      cgSquare.append('rect')
+        .attr('fill', 'blue')
+        .attr('width', 8)
+        .attr('height', 8)
+        .attr('transform', function() {
+          return `translate(-${this.getAttribute('width') / 2}` +
+            `, -${this.getAttribute('height') / 2})`;
+        })
+        .attr('x', d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
+        .attr('y', d => y(+d.value));
+    })
 
     // Add titles
     svg

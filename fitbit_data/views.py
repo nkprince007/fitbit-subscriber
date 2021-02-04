@@ -107,6 +107,7 @@ def get_body_weight_fat_metrics(request):
 
     return Response([
         {
+            'metric_type': ['manual', 'api'][randint(0, 1)],
             'date': format_date(datetime.today() - timedelta(i)),
             'metric': metric,
             'value': randint(50, 200) if metric != 'Body Fat (%)' else randint(10, 100),
