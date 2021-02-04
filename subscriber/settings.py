@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'rest_framework',
-    'bootstrap4',
+    'bootstrap',
+    'fontawesome',
     'fitbit_auth.apps.FitbitAuthConfig',
     'fitbit_data.apps.FitbitDataConfig',
 ]

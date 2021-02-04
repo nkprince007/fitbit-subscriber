@@ -12,4 +12,4 @@ dj-database-url~=0.5.0
 django-ipware~=3.0.1
 celery~=5.0.0
 redis~=3.5.3
-django-bootstrap4~=2.3.1
+django-bootstrap-static~=4.2.1
