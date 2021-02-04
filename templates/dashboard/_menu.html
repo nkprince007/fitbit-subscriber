@@ -14,20 +14,47 @@
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
   }
+
+  #global-config-form {
+    padding-bottom: 1rem;
+  }
+
+  .search-form-group {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .search-form-group .form-group {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .search-form-group .submit-button {
+    margin-left: 1rem;
+  }
 </style>
 
 <div class="menu d-flex flex-column">
   <form id="global-config-form" method="GET" action="" class="">
-    <div class="form-group">
-      <label for="global-search">Patient search</label>
-      <input
-        class="form-control flex-fill"
-        type="search"
-        placeholder="Search"
-        aria-label="Search"
-        id="global-search"
-        name="patientId"
-      />
+    <div class="search-form-group">
+      <div class="form-group">
+        <label for="global-search">Patient search</label>
+        <input
+          class="form-control flex-fill"
+          type="search"
+          placeholder="Search"
+          aria-label="Search"
+          id="global-search"
+          name="patientId"
+        />
+      </div>
+      <div class="submit-button">
+        <button type="submit" class="btn btn-primary mx-auto">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
     <div class="form-group">
       <label for="global--time-period-selector">Time period</label>
@@ -42,9 +69,6 @@
         <option value="60">Last 2 months</option>
         <!-- <option value="90">Last 3 months</option> -->
       </select>
-    </div>
-    <div class="submit-button d-flex">
-      <button type="submit" class="btn btn-primary mx-auto">Submit</button>
     </div>
   </form>
 
