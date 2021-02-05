@@ -7,13 +7,6 @@
     table-layout: fixed;
   }
 
-  #patients-list {
-    max-height: 15vmin;
-    margin-bottom: 10px;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-  }
-
   #global-config-form {
     padding-bottom: 1rem;
   }
@@ -47,6 +40,8 @@
           aria-label="Search"
           id="global-search"
           name="patientId"
+          autocomplete="off"
+          data-provide="typeahead"
         />
       </div>
       <div class="submit-button">
@@ -70,9 +65,6 @@
       </select>
     </div>
   </form>
-
-  <div id="patients-list" class="list-group">
-  </div>
 
   <div class="mt-3" id="patients-info">
     <table
@@ -110,15 +102,18 @@
   let globalConfigForm;
   let globalSearchInput;
   let globalPeriodInput;
-  let globalPatientsList;
   let globalLoading;
+  let globalPatientIds;
 
-  const choosePatient = (btn) => {
-    const buttons = globalPatientsList.find(".list-group-item-action");
-    buttons.each((_, el) => el.classList.remove("active"));
-    btn.classList.add("active");
-    const patientId = parseInt($(btn).data("patientId"));
+  const substringMatcher = (strings) => {
+    return function findMatches(q, cb) {
+      const substringRegex = new RegExp(q, 'i');
+      const matches = strings.filter(str => substringRegex.test(str));
+      cb(matches);
+    };
+  };
 
+  const choosePatient = (patientId) => {
     globalSearchInput.val(patientId);
     globalConfigForm.submit();
   };
@@ -131,25 +126,14 @@
     globalLoading = true;
     try {
       const data = Object.fromEntries(new URLSearchParams(window.location.search.replace('?', '')));
-      const buttons = globalPatientsList.find(".list-group-item-action");
-      buttons.each((_, el) => el.classList.remove("active"));
       let patientId;
 
       if (!!data['patientId']) {
-        const btn = buttons.filterByData('patientId', data['patientId'])[0];
-        if (btn) {
-          btn.classList.add("active");
-          globalSearchInput.val(data['patientId']);
-          patientId = data['patientId'];
-        }
+        globalSearchInput.val(data['patientId']);
+        patientId = data['patientId'];
       } else {
-        const btn = buttons[0];
-        if (btn) {
-          btn.classList.add("active");
-          globalSearchInput.val($(btn).data('patientId'));
-          globalConfigForm.submit();
-          return;
-        }
+        globalSearchInput.val($(btn).data('patientId'));
+        globalConfigForm.submit();
       }
 
       if (!!data['period']) {
@@ -164,13 +148,6 @@
   }
 
   const addListeners = () => {
-    const buttons = globalPatientsList.find(".list-group-item-action");
-    buttons.each((_, btn) => {
-      $(btn).click(() => {
-        choosePatient(btn);
-      });
-    });
-
     globalPeriodInput.change(function (event) {
       choosePeriod(event.target.value);
     });
@@ -207,19 +184,22 @@
   }
 
   const populatePatients = (patients) => {
-    globalPatientsList.empty();
-    patients.forEach(patient => {
-      const btn = document.createElement('button');
-      btn.classList.add('py-1', 'list-group-item', 'list-group-item-action', 'btn-primary');
-      btn.dataset.patientId = patient.id;
-      btn.innerText = `Patient ${patient.id}`;
-      globalPatientsList.append(btn);
+    globalSearchInput.typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 1,
+    }, {
+      name: 'patients',
+      source: substringMatcher(globalPatientIds),
+    }).bind("typeahead:selected", (event, value) => {
+      choosePatient(value);
     });
-
+    $('.search-form-group .form-group .twitter-typeahead')
+      .css({display: 'block'});
     addListeners();
   }
 
-  $(document).ready(function () {
+  $(document).ready(async function () {
     $.fn.filterByData = function(prop, val) {
       return this.filter(
         function() { return $(this).data(prop)==val; }
@@ -229,11 +209,13 @@
     globalConfigForm = $('#global-config-form');
     globalSearchInput = $('#global-search');
     globalPeriodInput = $("#global--time-period-selector");
-    globalPatientsList = $('#patients-list')
 
-    addListeners();
+    const patientIds = (await axios({
+      method: 'get',
+      url: "{% url 'patient_ids' %}",
+    })).data;
+    globalPatientIds = patientIds;
 
-    // randomly populating patients
-    populatePatients(Array.from({length: 4}, (_, i) => ({id: i + 1})));
+    populatePatients(patientIds.map((id) => ({id})));
   });
 </script>

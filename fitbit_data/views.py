@@ -13,6 +13,11 @@ def dashboard(request):
     return render(request, 'dashboard.html')
 
 
+@api_view(('GET',))
+def get_patient_ids(request):
+    return Response([i+1 for i in range(100)])
+
+
 @api_view(('POST',))
 def get_patient_details(request):
     patient_id = get_patient_id(request)
