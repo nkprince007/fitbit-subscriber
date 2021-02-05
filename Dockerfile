@@ -34,7 +34,8 @@ ADD requirements.txt $APP_ROOT
 RUN apt-get install --no-install-recommends -y build-essential && \
     pip install --no-cache-dir -r requirements.txt && \
     apt-get remove -y build-essential && \
-    apt-get clean
+    apt-get clean && \
+    apt-get autoremove -y
 
 ADD . $APP_ROOT
 
