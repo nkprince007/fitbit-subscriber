@@ -1,0 +1,140 @@
+{% load static %}
+
+<style>
+  #date-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  #date-selector .btn {
+    border-radius: 50%;
+    height: 24px;
+    width: 24px;
+    padding: 0;
+    margin: 0;
+  }
+</style>
+
+<label>Chosen date range</label>
+<div id="date-selector">
+  <button id="select-previous-date" class="btn btn-outline-info">
+    <i class="fa fa-chevron-left"></i>
+  </button>
+  <div class="date-range">
+    <span id="date-range-start" class="start"></span>
+    <span>-</span>
+    <span id="date-range-end" class="end"></span>
+  </div>
+  <button id="select-next-date" class="btn btn-outline-info">
+    <i class="fa fa-chevron-right"></i>
+  </button>
+</div>
+
+<script>
+  let currentDateRange = null;
+  const milliSecondsInDay = 1000 * 60 * 60 * 24;
+
+  function formatDate(date) {
+    return moment(date).format('MMM Do YYYY');
+  }
+
+  function reconfigureDateRange(period) {
+    currentDateRange = null;
+    const {start, end} = getCurrentRange(period);
+    setDates(start, end);
+  }
+
+  function getCurrentRange(period) {
+    if (!period) {
+      period = globalPeriodInput.val();
+    }
+
+    let endDate, startDate;
+    if (currentDateRange) {
+      endDate = currentDateRange.end;
+      startDate = currentDateRange.start;
+    } else {
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setTime(endDate.getTime() - period * milliSecondsInDay);
+      currentDateRange = {end: endDate, start: startDate};
+    }
+    return {...currentDateRange, period};
+  }
+
+  function previousRange(ev) {
+    let {period, end, start} = getCurrentRange();
+    end.setTime(end.getTime() - period * milliSecondsInDay);
+    start.setTime(start.getTime() - period * milliSecondsInDay);
+    setDates(start, end, true);
+    ev.preventDefault();
+  }
+
+  function nextRange(ev) {
+    let {period, end, start} = getCurrentRange();
+    end.setTime(end.getTime() + period * milliSecondsInDay);
+    start.setTime(start.getTime() + period * milliSecondsInDay);
+    setDates(start, end, true);
+    ev.preventDefault();
+  }
+
+  function setDates(start, end, newUpdate) {
+    const dateRangeStart = $('#date-range-start');
+    const dateRangeEnd = $('#date-range-end');
+    dateRangeStart.text(formatDate(start));
+    dateRangeEnd.text(formatDate(end));
+    currentDateRange = {start, end};
+    globalStartDateInput.val(start.getTime());
+    globalEndDateInput.val(end.getTime());
+    if (newUpdate) {
+      globalConfigForm.submit();
+    }
+  }
+
+  function initDateSelector(data) {
+    let start, end, period;
+    try {
+      if (!!data['startDate'] && !!data['endDate']) {
+        globalStartDateInput.val(data['startDate']);
+        globalEndDateInput.val(data['endDate']);
+
+        end = new Date(parseInt(globalEndDateInput.val()));
+        start = new Date(parseInt(globalStartDateInput.val()));
+        currentDateRange = {start, end};
+      } else if (!!data['startDate']) {
+        start = parseInt(data['startDate']);
+        period = parseInt(globalPeriodInput.val());
+        globalStartDateInput.val(start);
+        globalEndDateInput.val(start + period * milliSecondsInDay);
+
+        start = new Date(start);
+        end = new Date(start + period * milliSecondsInDay);
+        currentDateRange = {start, end};
+      } else if (!!data['endDate']) {
+        end = parseInt(data['endDate']);
+        period = parseInt(globalPeriodInput.val());
+        globalEndDateInput.val(end);
+        globalStartDateInput.val(end - period * milliSecondsInDay);
+
+        end = new Date(end);
+        start = new Date(end - period * milliSecondsInDay);
+        currentDateRange = {start, end};
+      } else {
+        const range = getCurrentRange();
+        end = range.end;
+        start = range.start;
+      }
+    } catch (err) {
+      console.warn(err);
+      const range = getCurrentRange();
+      end = range.end;
+      start = range.start;
+    }
+
+    setDates(start, end);
+    $('#select-previous-date').on('click', previousRange);
+    $('#select-next-date').on('click', nextRange);
+  }
+</script>

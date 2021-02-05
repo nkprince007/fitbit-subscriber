@@ -4,11 +4,7 @@
   }
 
   .patients-info-table {
-    table-layout: fixed;
-  }
-
-  #global-config-form {
-    padding-bottom: 1rem;
+    display: table;
   }
 
   .search-form-group {
@@ -57,38 +53,42 @@
         class="form-control"
         id="global--time-period-selector"
       >
-        <option value="7">Last week</option>
-        <option value="14">Last 2 weeks</option>
-        <option value="30">Last month</option>
-        <option value="60">Last 2 months</option>
+        <option value="7">1 week</option>
+        <option value="14">2 weeks</option>
+        <option value="30">1 month</option>
+        <option value="60">2 months</option>
         <!-- <option value="90">Last 3 months</option> -->
       </select>
     </div>
+    <input id="global-start-date-input" type="hidden" name="startDate">
+    <input id="global-end-date-input" type="hidden" name="endDate">
   </form>
 
-  <div class="mt-3" id="patients-info">
+  {% include "dashboard/_date_selector.html" %}
+
+  <div class="mt-5" id="patients-info">
     <table
       class="card patients-info-table table table-light"
       id="patient-details"
     >
       <thead>
         <tr>
-          <th class="m-0 p-0">
-            <h6 class="m-2">Patient Details</h6>
+          <th colspan="2" class="m-0 p-0">
+            <h6 class="m-2 text-center"><b>Patient Details</b></h6>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr class="py-0">
-          <th class="py-1" scope="row">Name</th>
+          <th class="text-right py-1" scope="row">Name</th>
           <td id="patient--name" class="text-capitalize py-1"></td>
         </tr>
         <tr class="py-0">
-          <th class="py-1" scope="row">Age</th>
+          <th class="text-right py-1" scope="row">Age</th>
           <td id="patient--age" class="text-capitalize py-1"></td>
         </tr>
         <tr class="py-0">
-          <th class="py-1" scope="row">Sex</th>
+          <th class="text-right py-1" scope="row">Sex</th>
           <td id="patient--sex" class="text-capitalize py-1"></td>
         </tr>
       </tbody>
@@ -104,6 +104,8 @@
   let globalPeriodInput;
   let globalLoading;
   let globalPatientIds;
+  let globalStartDateInput;
+  let globalEndDateInput;
 
   const substringMatcher = (strings) => {
     return function findMatches(q, cb) {
@@ -119,6 +121,7 @@
   };
 
   const choosePeriod = (period) => {
+    reconfigureDateRange(period);
     globalConfigForm.submit();
   }
 
@@ -132,13 +135,15 @@
         globalSearchInput.val(data['patientId']);
         patientId = data['patientId'];
       } else {
-        globalSearchInput.val($(btn).data('patientId'));
+        globalSearchInput.val(globalPatientIds[0] || 0);
         globalConfigForm.submit();
       }
 
       if (!!data['period']) {
         globalPeriodInput.val(data['period']);
       }
+
+      initDateSelector(data);
 
       await populatePatientDetails(patientId);
     } catch (err) {
@@ -209,6 +214,8 @@
     globalConfigForm = $('#global-config-form');
     globalSearchInput = $('#global-search');
     globalPeriodInput = $("#global--time-period-selector");
+    globalStartDateInput = $('#global-start-date-input');
+    globalEndDateInput = $('#global-end-date-input');
 
     const patientIds = (await axios({
       method: 'get',
