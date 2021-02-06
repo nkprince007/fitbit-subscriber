@@ -62,6 +62,12 @@
     setDates(start, end);
   }
 
+  function resetDate() {
+    currentDateRange = null;
+    const {end, start} = getCurrentRange();
+    setDates(start, end, true);
+  }
+
   function getCurrentRange(period) {
     if (!period) {
       period = globalPeriodInput.val();
@@ -152,5 +158,6 @@
     setDates(start, end);
     $('#select-previous-date').on('click', previousRange);
     $('#select-next-date').on('click', nextRange);
+    $('#reset-date').on('click', resetDate);
   }
 </script>
