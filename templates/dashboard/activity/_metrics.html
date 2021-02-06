@@ -2,8 +2,9 @@
 
 <style>
   #activity-charts {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 </style>
 
@@ -17,7 +18,7 @@ function redrawActivityMetrics({period, patientId}) {
 
   // set the dimensions and margins of the graph
   const margin = {top: 30, right: 10, bottom: 30, left: 30},
-      width = activityChartsEl.width() / 4 - margin.left - margin.right,
+      width = activityChartsEl.width() / 2 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
   //Read the data

@@ -15,11 +15,27 @@
     padding: 0;
     margin: 0;
   }
+
+  .date-label {
+    margin-bottom: 0.25rem;
+  }
+
+  #reset-date {
+    float: right;
+    padding: 0 4px;
+    margin: 0;
+  }
 </style>
 
-<label>Chosen date range</label>
+<div class="date-label">
+  <label>Chosen date range</label>
+  <button id="reset-date" class="btn btn-sm btn-outline-primary">
+    Reset
+  </button>
+</div>
+
 <div id="date-selector">
-  <button id="select-previous-date" class="btn btn-outline-info">
+  <button id="select-previous-date" class="btn btn-outline-primary">
     <i class="fa fa-chevron-left"></i>
   </button>
   <div class="date-range">
@@ -27,7 +43,7 @@
     <span>-</span>
     <span id="date-range-end" class="end"></span>
   </div>
-  <button id="select-next-date" class="btn btn-outline-info">
+  <button id="select-next-date" class="btn btn-outline-primary">
     <i class="fa fa-chevron-right"></i>
   </button>
 </div>

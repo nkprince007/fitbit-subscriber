@@ -1,8 +1,4 @@
 <style>
-  .menu {
-    padding: 0 1rem;
-  }
-
   .patients-info-table {
     display: table;
   }
@@ -25,77 +21,78 @@
 </style>
 
 <div class="menu d-flex flex-column">
-  <form id="global-config-form" method="GET" action="" class="">
-    <div class="search-form-group">
+  <div class="px-3">
+    <form id="global-config-form" method="GET" action="" class="">
+      <div class="search-form-group">
+        <div class="form-group">
+          <label for="global-search">Patient search</label>
+          <input
+            class="form-control flex-fill"
+            type="search"
+            placeholder="Search"
+            aria-label="Search"
+            id="global-search"
+            name="patientId"
+            autocomplete="off"
+            data-provide="typeahead"
+          />
+        </div>
+        <div class="submit-button">
+          <button type="submit" class="btn btn-primary mx-auto">
+            <i class="fa fa-search" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
       <div class="form-group">
-        <label for="global-search">Patient search</label>
-        <input
-          class="form-control flex-fill"
-          type="search"
-          placeholder="Search"
-          aria-label="Search"
-          id="global-search"
-          name="patientId"
-          autocomplete="off"
-          data-provide="typeahead"
-        />
+        <label for="global--time-period-selector">Time period</label>
+        <select
+          name="period"
+          class="form-control"
+          id="global--time-period-selector"
+        >
+          <option value="7">1 week</option>
+          <option value="14">2 weeks</option>
+          <option value="30">1 month</option>
+          <option value="60">2 months</option>
+          <!-- <option value="90">Last 3 months</option> -->
+        </select>
       </div>
-      <div class="submit-button">
-        <button type="submit" class="btn btn-primary mx-auto">
-          <i class="fa fa-search" aria-hidden="true"></i>
-        </button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="global--time-period-selector">Time period</label>
-      <select
-        name="period"
-        class="form-control"
-        id="global--time-period-selector"
+      <input id="global-start-date-input" type="hidden" name="startDate">
+      <input id="global-end-date-input" type="hidden" name="endDate">
+    </form>
+
+    {% include "dashboard/_date_selector.html" %}
+
+    <div class="mt-5" id="patients-info">
+      <table
+        class="card patients-info-table table table-light"
+        id="patient-details"
       >
-        <option value="7">1 week</option>
-        <option value="14">2 weeks</option>
-        <option value="30">1 month</option>
-        <option value="60">2 months</option>
-        <!-- <option value="90">Last 3 months</option> -->
-      </select>
+        <thead>
+          <tr>
+            <th colspan="2" class="m-0 p-0">
+              <h6 class="m-2 text-center"><b>Patient Details</b></h6>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="py-0">
+            <th class="text-right py-1" scope="row">Name</th>
+            <td id="patient--name" class="text-capitalize py-1"></td>
+          </tr>
+          <tr class="py-0">
+            <th class="text-right py-1" scope="row">Age</th>
+            <td id="patient--age" class="text-capitalize py-1"></td>
+          </tr>
+          <tr class="py-0">
+            <th class="text-right py-1" scope="row">Sex</th>
+            <td id="patient--sex" class="text-capitalize py-1"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <input id="global-start-date-input" type="hidden" name="startDate">
-    <input id="global-end-date-input" type="hidden" name="endDate">
-  </form>
-
-  {% include "dashboard/_date_selector.html" %}
-
-  <div class="mt-5" id="patients-info">
-    <table
-      class="card patients-info-table table table-light"
-      id="patient-details"
-    >
-      <thead>
-        <tr>
-          <th colspan="2" class="m-0 p-0">
-            <h6 class="m-2 text-center"><b>Patient Details</b></h6>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="py-0">
-          <th class="text-right py-1" scope="row">Name</th>
-          <td id="patient--name" class="text-capitalize py-1"></td>
-        </tr>
-        <tr class="py-0">
-          <th class="text-right py-1" scope="row">Age</th>
-          <td id="patient--age" class="text-capitalize py-1"></td>
-        </tr>
-        <tr class="py-0">
-          <th class="text-right py-1" scope="row">Sex</th>
-          <td id="patient--sex" class="text-capitalize py-1"></td>
-        </tr>
-      </tbody>
-    </table>
-
-    {% include 'dashboard/activity/_activity_index_summary.html' %}
   </div>
+{% include 'dashboard/activity/_activity_index_summary.html' %}
 </div>
 
 <script>
@@ -186,6 +183,7 @@
     redrawNutritionBarPlots(data);
     redrawActivityMetrics(data);
     redrawBodyWeightFatCharts(data);
+    redrawSleepZones(data);
   }
 
   const populatePatients = (patients) => {

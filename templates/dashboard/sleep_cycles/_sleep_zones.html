@@ -1,0 +1,13 @@
+{% load static %}
+
+<script>
+function redrawSleepZones({patientId, period}) {
+  axios({
+    method: 'post',
+    url: "{% url 'sleep_zones' %}",
+    data: {period, patientId}
+  }).then(({data}) => {
+    console.log(data);
+  });
+}
+</script>

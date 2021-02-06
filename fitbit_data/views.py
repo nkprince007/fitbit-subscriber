@@ -89,7 +89,7 @@ def get_activity_metrics(request):
 
 @api_view(('POST',))
 def get_calorie_count(request):
-    period = min(get_period(request), 30)
+    period = get_period(request)
     patient_id = get_patient_id(request)
 
     return Response([
@@ -119,4 +119,20 @@ def get_body_weight_fat_metrics(request):
         }
         for i in range(period)
         for metric in metrics
+    ])
+
+
+@api_view(('POST',))
+def get_sleep_zones(request):
+    period = get_period(request)
+    patient_id = get_patient_id(request)
+    return Response([
+        {
+            'date': format_date(datetime.today() - timedelta(i)),
+            'asleep': randint(0, 100),
+            'awake': randint(0, 100),
+            'restless': randint(0, 100),
+            'efficiency': randint(0, 100),
+        }
+        for i in range(period)
     ])
