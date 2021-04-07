@@ -86,8 +86,8 @@ def auth_complete(request):
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
         tb = traceback.format_exc()
-        return Response({'error': tb}, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'profile': profile}, status=status.HTTP_200_OK)
+        return Response({'error': tb, 'credentials': credentials}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'profile': profile, 'credentials': credentials}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
