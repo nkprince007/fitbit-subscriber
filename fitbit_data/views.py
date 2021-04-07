@@ -62,19 +62,25 @@ def get_activity_summary(request):
 
 @api_view(('POST',))
 def get_activity_zones(request):
-    period = get_period(request)
     patient_id = get_patient_id(request)
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
 
-    return Response([
-        {
-            'date': format_date(datetime.today() - timedelta(i)),
-            'Sedentary': randint(0, 100),
-            'Lightly active': randint(0, 100),
-            'Fairly active': randint(0, 100),
-            'Very active': randint(0, 100),
-        }
-        for i in range(period)
-    ])
+    start_date, end_date = get_range(request)
+    summaries = fb_user.activity_summary.filter(
+        date__gte=start_date, date__lte=end_date)
+
+    zones = []
+    for summary in summaries:
+        data = summary.data.get('summary')
+        zones.append({
+            'date': format_date(summary.date),
+            'Sedentary': data.get('sedentaryMinutes', 0),
+            'Lightly active': data.get('lightlyActiveMinutes', 0),
+            'Fairly active': data.get('fairlyActiveMinutes', 0),
+            'Very active': data.get('veryActiveMinutes', 0),
+        })
+
+    return Response(zones)
 
 
 @api_view(('POST',))

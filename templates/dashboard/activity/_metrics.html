@@ -57,7 +57,7 @@
       // Add X axis --> it is a date format
       const x = d3
         .scaleTime()
-        .domain(d3.extent(data, (d) => moment(d.date, "DD/MM/YYYY").toDate()))
+        .domain([range.start, range.end])
         .range([0, width]);
 
       svg

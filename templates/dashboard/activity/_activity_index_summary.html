@@ -66,7 +66,6 @@
             .axisBottom(x)
             .tickSize(0)
             .tickFormat((d) => {
-              console.log(d);
               const start = moment(d);
               const end = moment(
                 new Date(start.toDate().getTime() + 6 * 1000 * 60 * 60 * 24)
@@ -87,14 +86,6 @@
         .padding(0);
       svg.append("g").call(d3.axisLeft(y).tickSize(0));
 
-      // Build color scale
-      const myColor = d3
-        .scaleLinear()
-        .range(["#ebedf0", "#216e39"])
-        .domain([0, 4]);
-      // Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/
-      // PAL Value: 0 = dead, 2-2.5 = average, 4 = professional athletes
-
       svg
         .selectAll()
         .data(summaries)
@@ -104,7 +95,11 @@
         .attr("y", (d) => y(d.weekDay))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
-        .style("fill", (d) => myColor(d.value));
+        .style("fill", (d) => {
+          // Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/
+          // PAL Value: 0 = dead, 2-2.5 = average, 4 = professional athletes
+          return d3.interpolateGreens(d.value / 2.5);
+        });
     });
   }
 </script>

@@ -112,7 +112,7 @@
       // Add X axis --> it is a date format
       const x = d3
         .scaleLinear()
-        .domain([new Date(Date.now() - period * 24 * 3600 * 1000), new Date()])
+        .domain([range.start, range.end])
         .range([0, width]);
       svg
         .append("g")
