@@ -1,7 +1,7 @@
 {% load static %}
 
 <div class="flex-fill">
-  <p class="m-0 p-0 text-center">Physical activity over time</p>
+  <p class="m-0 p-0 text-center">Physical Activity Level (PAL)</p>
   <div id="activity-heatmap"></div>
 </div>
 
@@ -15,10 +15,6 @@
     const heatmapEl = $("#activity-heatmap");
 
     // Labels of row and columns
-    const weeks = Array.from(
-      { length: Math.floor(parseInt(globalPeriodInput.val()) / 7.0) },
-      (_, i) => `${-i}`
-    ).reverse();
     const weekdays = [
       "Sun",
       "Mon",
@@ -50,15 +46,14 @@
       url: "{% url 'activity_summary' %}",
       data: { period, patientId },
     }).then(({ data }) => {
-      let weeks = [];
-      data.forEach((d) => {
-        const start = getWeekStart(d);
-        start.end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
-        if (weeks.every((d) => d.getTime() !== start.getTime())) {
-          weeks.push(start);
-        }
-      });
-      weeks = Array.from(weeks).reverse();
+      const { summaries } = data;
+      const startDate = moment(data.startDate, "DD/MM/YYYY").toDate();
+      const endDate = moment(data.endDate, "DD/MM/YYYY").toDate();
+      const weeks = [];
+      for (let currDate = startDate; currDate.getTime() < endDate.getTime(); ) {
+        weeks.push(currDate);
+        currDate = new Date(currDate.getTime() + 7 * 1000 * 60 * 60 * 24);
+      }
 
       // Build X scale:
       const x = d3.scaleBand().range([0, width]).domain(weeks).padding(0);
@@ -71,8 +66,11 @@
             .axisBottom(x)
             .tickSize(0)
             .tickFormat((d) => {
+              console.log(d);
               const start = moment(d);
-              const end = moment(d.end);
+              const end = moment(
+                new Date(start.toDate().getTime() + 6 * 1000 * 60 * 60 * 24)
+              );
               if (weeks.length <= 4) {
                 return `${start.format("MMM D")}-${end.format("MMM D")}`;
               } else {
@@ -93,22 +91,18 @@
       const myColor = d3
         .scaleLinear()
         .range(["#ebedf0", "#216e39"])
-        .domain([1, 100]);
+        .domain([0, 4]); // 0 = dead; 2-2.5 = average; 4 = professional athletes
 
       svg
         .selectAll()
-        .data(data, function (d) {
-          return d.weekIndex + ":" + d.weekDay;
-        })
+        .data(summaries)
         .enter()
         .append("rect")
         .attr("x", (d) => x(getWeekStart(d)))
         .attr("y", (d) => y(d.weekDay))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
-        .style("fill", function (d) {
-          return myColor(d.value);
-        });
+        .style("fill", (d) => myColor(d.value));
     });
   }
 </script>

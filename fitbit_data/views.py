@@ -7,7 +7,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from fitbit_auth.models import FitbitUser, User
-from fitbit_data.utils import get_patient_id, get_period, format_date
+from fitbit_data.utils import (get_patient_id,
+                               get_period,
+                               format_date,
+                               get_week_end_date,
+                               get_week_start_date)
 
 
 def dashboard(request):
@@ -28,27 +32,31 @@ def get_patient_details(request):
 @api_view(('POST', ))
 def get_activity_summary(request):
     period = get_period(request)
-    patient_id = get_patient_id(request)
+    user = get_object_or_404(User, id=get_patient_id(request))
+    bmr = user.fb_auth.basal_metabolic_rate
 
-    num_weeks = period // 7
-    week_days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     today = datetime.today()
-    week_day_index = (today.weekday() + 1) % 7
-    last_sun = today - timedelta(7 + week_day_index)
-    last_sat = today - timedelta(7 + week_day_index - 6)
-    return Response([
-        {
-            'weekIndex': -week_index,
-            'weekDay': week_day,
+    start_date = today - timedelta(days=period)
+    summaries = user.fb_auth.activity_summary.filter(date__gte=start_date)
+    response = []
+    for summary in summaries:
+        response.append({
+            'weekIndex': 1,
+            'weekDay': summary.date.strftime('%a'),
+            'value': (summary.data.get('summary').get('caloriesOut') / bmr
+                      if summary.data and summary.data.get('summary')
+                      and summary.data.get('summary').get('caloriesOut') else 0),
+            'date': format_date(summary.date),
             'weekRange': {
-                'start': format_date(last_sun - timedelta(weeks=week_index)),
-                'end': format_date(last_sat - timedelta(weeks=week_index)),
-            },
-            'value': randint(0, 100),
-        }
-        for week_index in range(num_weeks)
-        for week_day in week_days
-    ])
+                'start': format_date(get_week_start_date(summary.date)),
+                'end': format_date(get_week_end_date(summary.date)),
+            }
+        })
+    return Response({
+        'summaries': response,
+        'startDate': format_date(get_week_start_date(start_date)),
+        'endDate': format_date(get_week_end_date(today))
+    })
 
 
 @api_view(('POST',))

@@ -1,3 +1,6 @@
+from typing import Optional
+
+from cached_property import cached_property_with_ttl
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -18,6 +21,19 @@ class FitbitUser(models.Model):
     scope = models.TextField()
     expires_at = models.DateTimeField(default=timezone.now)
 
+    @cached_property_with_ttl(ttl=5 * 60)  # cache invalidates after 5 minutes
+    def basal_metabolic_rate(self) -> Optional[float]:
+        fb_client = self.client
+        profile = fb_client.user_profile_get().get('user')
+        gender = profile.get('gender').upper()
+        height = profile.get('height')
+        weight = profile.get('weight')
+        age = profile.get('age')
+        gender_factor = 5
+        if gender == 'FEMALE':
+            gender_factor = -161
+        return 10 * weight + 6.25 * height - 5 * age + gender_factor
+
     @property
     def client(self) -> CustomFitbit:
         def update_token(token):
@@ -34,3 +50,6 @@ class FitbitUser(models.Model):
                             self.expires_at.timestamp(),
                             refresh_cb=update_token,
                             system='METRIC')
+
+    def __str__(self) -> str:
+        return self.user.username

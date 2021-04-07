@@ -13,3 +13,4 @@ django-ipware~=3.0.1
 celery~=5.0.0
 redis~=3.5.3
 django-bootstrap-static~=4.2.1
+cached_property~=1.5.2

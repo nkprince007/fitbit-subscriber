@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from django.shortcuts import get_object_or_404
@@ -8,6 +8,14 @@ from fitbit_data.exceptions import InvalidPatientIdException, InvalidPeriodExcep
 
 def format_date(date: datetime, fmt: Optional[str] = '%d/%m/%Y') -> str:
     return date.strftime(fmt)
+
+
+def get_week_start_date(date):
+    return date - timedelta(date.weekday() + 1)
+
+
+def get_week_end_date(date):
+    return date + timedelta(5 - date.weekday())
 
 
 def get_patient_id(request):
@@ -63,19 +71,6 @@ def _convert_dimension(unit_name: str, unit_type: str, value: float):
             return value  # millilitres to millilitres
 
 
-def basal_metabolic_rate(user):
-    fb_client = user.fb_auth.client
-    profile = fb_client.user_profile_get().get('user')
-    gender = profile.get('gender').upper()
-    height = profile.get('height')
-    weight = profile.get('weight')
-    age = profile.get('age')
-    gender_factor = 5
-    if gender == 'FEMALE':
-        gender_factor = -161
-    return 10 * weight + 6.25 * height - 5 * age + gender_factor
-
-
 def required_calories(user, date=None):
     if date == None:
         activity = user.fb_auth.activity_summary.filter(date=datetime.today())
@@ -86,4 +81,4 @@ def required_calories(user, date=None):
 
     avg_activity_factor = sum(
         [group.activity_factor for group in activity]) / activity.count()
-    return basal_metabolic_rate(user) * avg_activity_factor
+    return user.fb_auth.basal_metabolic_rate * avg_activity_factor
