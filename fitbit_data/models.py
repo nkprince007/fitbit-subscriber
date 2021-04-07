@@ -13,8 +13,46 @@ class ActivitySummary(models.Model):
     data = models.JSONField(default=dict)
 
     @property
+    def steps(self):
+        summary = self.data.get('summary')
+        if not summary:
+            return 0
+        return summary.get('steps', 0)
+
+    @property
+    def flights_climbed(self):
+        summary = self.data.get('summary')
+        if not summary:
+            return 0
+        return summary.get('floors', 0)
+
+    @property
+    def active_duration(self):
+        summary = self.data.get('summary')
+        if not summary:
+            return 0
+        duration = summary.get('veryActiveMinutes', 0)
+        duration += summary.get('fairlyActiveMinutes', 0)
+        duration += summary.get('lightlyActiveMinutes', 0)
+        return duration
+
+    @property
+    def distance_travelled(self):
+        summary = self.data.get('summary')
+        if not summary:
+            return 0
+        distances = summary.get('distances')
+        for distance in distances:
+            if distance.get('activity') == 'total':
+                return distance.get('distance') * 1000  # km to m
+        return 0
+
+    @property
     def activity_factor(self):
         summary = self.data.get('summary')
+        if not summary:
+            return 0
+
         sedentary = summary.get('sedentaryMinutes')
         very_active = summary.get('veryActiveMinutes')
         fairly_active = summary.get('fairlyActiveMinutes')

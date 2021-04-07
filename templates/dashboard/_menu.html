@@ -184,6 +184,7 @@
     const data = {
       patientId: parseInt(patientId, 10),
       period: globalPeriodInput.val(),
+      range: getCurrentRange(),
     };
     redrawActivityHeatmap(data);
     redrawActivityZones(data);

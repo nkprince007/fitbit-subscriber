@@ -10,6 +10,7 @@ from fitbit_auth.models import FitbitUser, User
 from fitbit_data.utils import (get_patient_id,
                                get_period,
                                format_date,
+                               get_range,
                                get_week_end_date,
                                get_week_start_date)
 
@@ -78,22 +79,37 @@ def get_activity_zones(request):
 
 @api_view(('POST',))
 def get_activity_metrics(request):
-    period = get_period(request)
     patient_id = get_patient_id(request)
-    metrics = ['Flights climbed',
-               'Step Count',
-               'Distance travelled (m)',
-               'Active Duration (hrs)']
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
 
-    return Response([
-        {
-            'date': format_date(datetime.today() - timedelta(i)),
-            'metric': metric,
-            'value': randint(50, 200)
-        }
-        for i in range(period)
-        for metric in metrics
-    ])
+    start_date, end_date = get_range(request)
+    summaries = fb_user.activity_summary.filter(
+        date__gte=start_date, date__lte=end_date)
+
+    metrics = []
+    for summary in summaries:
+        metrics.append({
+            'date': format_date(summary.date),
+            'metric': 'Step Count',
+            'value': summary.steps,
+        })
+        metrics.append({
+            'date': format_date(summary.date),
+            'metric': 'Flights climbed',
+            'value': summary.flights_climbed,
+        })
+        metrics.append({
+            'date': format_date(summary.date),
+            'metric': 'Distance travelled (m)',
+            'value': summary.distance_travelled,
+        })
+        metrics.append({
+            'date': format_date(summary.date),
+            'metric': 'Active Duration (hrs)',
+            'value': summary.active_duration,
+        })
+
+    return Response(metrics)
 
 
 @api_view(('POST',))
@@ -113,12 +129,12 @@ def get_calorie_count(request):
 
 @api_view(('POST',))
 def get_body_fat_metrics(request):
-    period = get_period(request)
     patient_id = get_patient_id(request)
-
     fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
-    start_date = datetime.today()-timedelta(days=period)
-    fat_logs = fb_user.fat_logs.filter(date__gte=start_date)
+
+    start_date, end_date = get_range(request)
+    fat_logs = fb_user.fat_logs.filter(
+        date__gte=start_date, date__lte=end_date)
 
     response_data = []
     for log in fat_logs:
@@ -134,12 +150,12 @@ def get_body_fat_metrics(request):
 
 @api_view(('POST',))
 def get_body_weight_metrics(request):
-    period = get_period(request)
     patient_id = get_patient_id(request)
-
     fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
-    start_date = datetime.today()-timedelta(days=period)
-    weight_logs = fb_user.weight_logs.filter(date__gte=start_date)
+
+    start_date, end_date = get_range(request)
+    weight_logs = fb_user.weight_logs.filter(
+        date__gte=start_date, date__lte=end_date)
 
     response_data = []
     for log in weight_logs:

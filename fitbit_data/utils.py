@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
+import traceback
 from typing import Optional
 
-from django.shortcuts import get_object_or_404
-
-from fitbit_data.exceptions import InvalidPatientIdException, InvalidPeriodException
+from fitbit_data.exceptions import (InvalidPatientIdException,
+                                    InvalidPeriodException,
+                                    InvalidRangeException)
 
 
 def format_date(date: datetime, fmt: Optional[str] = '%d/%m/%Y') -> str:
@@ -24,6 +25,18 @@ def get_patient_id(request):
         return int(patient_id)
     except (ValueError, TypeError) as err:
         raise InvalidPatientIdException()
+
+
+def get_range(request):
+    range = request.data.get('range')
+    try:
+        start = datetime.fromisoformat(
+            range.get('start').replace('Z', '+00:00'))
+        end = datetime.fromisoformat(range.get('end').replace('Z', '+00:00'))
+        return (start, end)
+    except:
+        traceback.print_exc()
+        raise InvalidRangeException()
 
 
 def get_period(request):

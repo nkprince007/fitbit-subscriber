@@ -66,8 +66,9 @@
       .replaceAll(new RegExp(/\s+/g), "-");
   }
 
-  function redrawBodyMetricsChart(period, patientId, url) {
+  function redrawBodyMetricsChart(patientId, range, url) {
     const activityChartsEl = $("#body-weight-fat-charts");
+    const { period } = range;
 
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 20, bottom: 30, left: 30 },
@@ -79,7 +80,7 @@
       headers: { "X-CSRFToken": getCookie("csrftoken") },
       method: "post",
       url,
-      data: { period, patientId },
+      data: { patientId, range },
     }).then(({ data }) => {
       // group the data: I want to draw one line per group
       const sumstat = d3
@@ -219,12 +220,8 @@
     });
   }
 
-  function redrawBodyWeightFatCharts({ period, patientId }) {
-    redrawBodyMetricsChart(
-      period,
-      patientId,
-      "{% url 'body_weight_metrics' %}"
-    );
-    redrawBodyMetricsChart(period, patientId, "{% url 'body_fat_metrics' %}");
+  function redrawBodyWeightFatCharts({ patientId, range }) {
+    redrawBodyMetricsChart(patientId, range, "{% url 'body_weight_metrics' %}");
+    redrawBodyMetricsChart(patientId, range, "{% url 'body_fat_metrics' %}");
   }
 </script>

@@ -91,7 +91,9 @@
       const myColor = d3
         .scaleLinear()
         .range(["#ebedf0", "#216e39"])
-        .domain([0, 4]); // 0 = dead; 2-2.5 = average; 4 = professional athletes
+        .domain([0, 4]);
+      // Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/
+      // PAL Value: 0 = dead, 2-2.5 = average, 4 = professional athletes
 
       svg
         .selectAll()
