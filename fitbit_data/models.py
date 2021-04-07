@@ -10,6 +10,26 @@ class ActivitySummary(models.Model):
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
 
+    @property
+    def activity_factor(self):
+        summary = self.data.get('summary')
+        sedentary = summary.get('sedentaryMinutes')
+        very_active = summary.get('veryActiveMinutes')
+        fairly_active = summary.get('fairlyActiveMinutes')
+        lightly_active = summary.get('lightlyActiveMinutes')
+        max_time_spent = max(sedentary, very_active,
+                             fairly_active, lightly_active)
+        if max_time_spent == sedentary:
+            return 1.2
+        elif max_time_spent == lightly_active:
+            return 1.375
+        elif max_time_spent == fairly_active:
+            return 1.725
+        elif max_time_spent == very_active:
+            return 1.9
+        else:
+            return 1.55
+
     class Meta:
         verbose_name_plural = 'Activity Summary'
 
