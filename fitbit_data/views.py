@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from fitbit_auth.models import FitbitUser
+from fitbit_auth.models import FitbitUser, User
 from fitbit_data.utils import get_patient_id, get_period, format_date
 
 
@@ -16,13 +16,13 @@ def dashboard(request):
 
 @api_view(('GET',))
 def get_patient_ids(request):
-    return Response([i+1 for i in range(100)])
+    return Response(User.objects.values_list('id', flat=True))
 
 
 @api_view(('POST',))
 def get_patient_details(request):
-    patient_id = get_patient_id(request)
-    return Response({'name': "John Doe", 'age': 23, 'sex': 'Male'})
+    patient = get_object_or_404(User, id=get_patient_id(request))
+    return Response(patient.fb_auth.client.user_profile_get().get('user'))
 
 
 @api_view(('POST', ))

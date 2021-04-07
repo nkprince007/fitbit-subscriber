@@ -174,10 +174,12 @@
         url: "{% url 'patient_details' %}",
       })
     ).data;
-    const title = patient.sex.toLowerCase() === "male" ? "Mr" : "Mrs";
-    nameEl.text(`${title}. ${patient.name}`);
-    ageEl.text(patient.age);
-    sexEl.text(patient.sex);
+    const { fullName, age } = patient;
+    const gender = patient.gender.toLowerCase();
+    const title = gender === "male" ? "Mr" : "Mrs";
+    nameEl.text(`${title}. ${fullName}`);
+    ageEl.text(age);
+    sexEl.text(gender);
 
     const data = {
       patientId: parseInt(patientId, 10),
