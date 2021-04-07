@@ -32,4 +32,5 @@ class FitbitUser(models.Model):
                             self.access_token,
                             self.refresh_token,
                             self.expires_at.timestamp(),
-                            refresh_cb=update_token)
+                            refresh_cb=update_token,
+                            system='METRIC')
