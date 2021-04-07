@@ -71,6 +71,7 @@ class ActivitySummary(models.Model):
             return 1.55
 
     class Meta:
+        ordering = ['date']
         verbose_name_plural = 'Activity Summary'
 
 
@@ -82,6 +83,7 @@ class SleepSummary(models.Model):
     data = models.JSONField(default=dict)
 
     class Meta:
+        ordering = ['date']
         verbose_name_plural = 'Sleep Summary'
 
 
@@ -93,6 +95,7 @@ class FoodSummary(models.Model):
     data = models.JSONField(default=dict)
 
     class Meta:
+        ordering = ['date']
         verbose_name_plural = 'Food Summary'
 
 
@@ -104,6 +107,7 @@ class WaterSummary(models.Model):
     data = models.JSONField(default=dict)
 
     class Meta:
+        ordering = ['date']
         verbose_name_plural = 'Water Summary'
 
 
@@ -134,6 +138,7 @@ class BodyFatLog(models.Model):
         return sum(fat_percents) / len(fat_percents)
 
     class Meta:
+        ordering = ['date']
         verbose_name = 'Body Fat Log'
         verbose_name_plural = 'Body Fat Logs'
 
@@ -173,6 +178,7 @@ class BodyWeightLog(models.Model):
         return sum(weights) / len(weights)
 
     class Meta:
+        ordering = ['date']
         verbose_name = 'Body Weight Log'
         verbose_name_plural = 'Body Weight Logs'
 
@@ -185,5 +191,6 @@ class HeartRateSummary(models.Model):
     data = models.JSONField(default=dict)
 
     class Meta:
+        ordering = ['date']
         verbose_name = 'Heart Rate Timeseries'
         verbose_name_plural = 'Heart Rate Timeseries'
