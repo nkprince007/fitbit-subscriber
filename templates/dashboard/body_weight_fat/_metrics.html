@@ -66,7 +66,7 @@
       .replaceAll(new RegExp(/\s+/g), "-");
   }
 
-  function redrawBodyWeightFatCharts({ period, patientId }) {
+  function redrawBodyMetricsChart(period, patientId, url) {
     const activityChartsEl = $("#body-weight-fat-charts");
 
     // set the dimensions and margins of the graph
@@ -74,11 +74,11 @@
       width = activityChartsEl.width() / 3 - margin.left - margin.right,
       height = activityChartsEl.width() / 3 - margin.top - margin.bottom;
 
-    //Read the data
+    // Read the data
     axios({
       headers: { "X-CSRFToken": getCookie("csrftoken") },
       method: "post",
-      url: "{% url 'body_metrics' %}",
+      url,
       data: { period, patientId },
     }).then(({ data }) => {
       // group the data: I want to draw one line per group
@@ -127,10 +127,7 @@
       const yAxes = {};
       svg.append("g").each(function (s) {
         const svg1 = d3.select(this);
-        const y = d3
-          .scaleLinear()
-          .domain(d3.extent(s.values.map((s) => +s.value)))
-          .range([height, 0]);
+        const y = d3.scaleLinear().domain([10, 125]).range([height, 0]);
         yAxes[s.key] = y;
         svg1.call(d3.axisLeft(y).ticks(5));
       });
@@ -175,10 +172,10 @@
       // Draw circles
       sumstat.forEach((set) => {
         const y = yAxes[set.key];
-        const apiValues = set.values.filter((v) => v.metric_type === "api");
-        const manualValues = set.values.filter(
-          (v) => v.metric_type === "manual"
+        const apiValues = set.values.filter(
+          (v) => ["Aria", "AriaAir", "Aria2"].indexOf(v.metric_type) >= 0
         );
+        const manualValues = set.values.filter((v) => v.metric_type === "API");
 
         const cgCircle = svg
           .select(`#${generateIdForKey(set.key)}-value-group`)
@@ -220,5 +217,14 @@
         .attr("x", width / 2)
         .text((d) => d.key);
     });
+  }
+
+  function redrawBodyWeightFatCharts({ period, patientId }) {
+    redrawBodyMetricsChart(
+      period,
+      patientId,
+      "{% url 'body_weight_metrics' %}"
+    );
+    redrawBodyMetricsChart(period, patientId, "{% url 'body_fat_metrics' %}");
   }
 </script>

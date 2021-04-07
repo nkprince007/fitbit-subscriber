@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.db import models
 
 from fitbit_auth.models import FitbitUser
@@ -74,6 +76,25 @@ class BodyFatLog(models.Model):
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
 
+    @property
+    def source(self):
+        logs = self.data.get('fat')
+        if len(logs) == 0:
+            return None
+        sources = list(map(lambda log: log.get('source'), logs))
+        try:
+            return Counter(sources).most_common(1)[0][0]
+        except IndexError:
+            return None
+
+    @property
+    def fat(self):
+        logs = self.data.get('fat')
+        if len(logs) == 0:
+            return None
+        fat_percents = list(map(lambda log: log.get('fat'), logs))
+        return sum(fat_percents) / len(fat_percents)
+
     class Meta:
         verbose_name = 'Body Fat Log'
         verbose_name_plural = 'Body Fat Logs'
@@ -85,6 +106,33 @@ class BodyWeightLog(models.Model):
                                 related_name='weight_logs')
     date = models.DateField(default=None)
     data = models.JSONField(default=dict)
+
+    @property
+    def bmi(self):
+        logs = self.data.get('weight')
+        if len(logs) == 0:
+            return None
+        bmis = list(map(lambda log: log.get('bmi'), logs))
+        return sum(bmis) / len(bmis)
+
+    @property
+    def source(self):
+        logs = self.data.get('weight')
+        if len(logs) == 0:
+            return None
+        sources = list(map(lambda log: log.get('source'), logs))
+        try:
+            return Counter(sources).most_common(1)[0][0]
+        except IndexError:
+            return None
+
+    @property
+    def weight(self):
+        logs = self.data.get('weight')
+        if len(logs) == 0:
+            return None
+        weights = list(map(lambda log: log.get('weight'), logs))
+        return sum(weights) / len(weights)
 
     class Meta:
         verbose_name = 'Body Weight Log'

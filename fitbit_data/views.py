@@ -1,11 +1,12 @@
 from datetime import timedelta, datetime
 from random import randint
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from fitbit_auth.models import FitbitUser
 from fitbit_data.utils import get_patient_id, get_period, format_date
 
 
@@ -103,29 +104,56 @@ def get_calorie_count(request):
 
 
 @api_view(('POST',))
-def get_body_weight_fat_metrics(request):
+def get_body_fat_metrics(request):
     period = get_period(request)
     patient_id = get_patient_id(request)
-    metrics = ['Body Weight (pounds)',
-               'Body Fat (%)',
-               'Body Mass Index (BMI)']
 
-    return Response([
-        {
-            'metric_type': ['manual', 'api'][randint(0, 1)],
-            'date': format_date(datetime.today() - timedelta(i)),
-            'metric': metric,
-            'value': randint(50, 200) if metric != 'Body Fat (%)' else randint(10, 100),
-        }
-        for i in range(period)
-        for metric in metrics
-    ])
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+    start_date = datetime.today()-timedelta(days=period)
+    fat_logs = fb_user.fat_logs.filter(date__gte=start_date)
+
+    response_data = []
+    for log in fat_logs:
+        response_data.append({
+            'value': log.fat,
+            'metric_type': log.source,
+            'date': format_date(log.date),
+            'metric': 'Body Fat (%)'
+        })
+
+    return Response(response_data)
+
+
+@api_view(('POST',))
+def get_body_weight_metrics(request):
+    period = get_period(request)
+    patient_id = get_patient_id(request)
+
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+    start_date = datetime.today()-timedelta(days=period)
+    weight_logs = fb_user.weight_logs.filter(date__gte=start_date)
+
+    response_data = []
+    for log in weight_logs:
+        response_data.append({
+            'value': log.bmi,
+            'metric_type': log.source,
+            'date': format_date(log.date),
+            'metric': 'Body Mass Index (BMI)'
+        })
+        response_data.append({
+            'value': log.weight,
+            'metric_type': log.source,
+            'date': format_date(log.date),
+            'metric': 'Body Weight (kgs)'
+        })
+
+    return Response(response_data)
 
 
 @api_view(('POST',))
 def get_sleep_zones(request):
     period = get_period(request)
-    patient_id = get_patient_id(request)
     return Response([
         {
             'date': format_date(datetime.today() - timedelta(i)),
