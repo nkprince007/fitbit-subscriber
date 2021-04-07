@@ -2,88 +2,96 @@
 <div id="nutrition-bar-plot"></div>
 
 <script>
-function redrawNutritionBarPlots({period, patientId}) {
-  const barPlotEl = $('#nutrition-bar-plot');
+  function redrawNutritionBarPlots({ period, patientId }) {
+    const barPlotEl = $("#nutrition-bar-plot");
 
-  // set the dimensions and margins of the graph
-  var margin = {top: 20, right: 30, bottom: 20, left: 50},
+    // set the dimensions and margins of the graph
+    var margin = { top: 20, right: 30, bottom: 20, left: 50 },
       width = barPlotEl.width() - margin.left - margin.right,
       height = 200 - margin.top - margin.bottom;
 
-  // append the svg object to the body of the page
-  var svg = d3.select("#nutrition-bar-plot")
-    .append("svg")
-      .attr("font-size", '12px')
+    // append the svg object to the body of the page
+    var svg = d3
+      .select("#nutrition-bar-plot")
+      .append("svg")
+      .attr("font-size", "12px")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  axios({
-    method: 'post',
-    url: "{% url 'calorie_count' %}",
-    data: {period, patientId}
-  }).then(({data}) => {
-    const subgroups = ['current_value', 'optimal_value'];
-    const groups =
-      d3.map(data, d => d.date).keys().map(d => moment(d, 'DD/MM/YYYY').toDate())
+    axios({
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      method: "post",
+      url: "{% url 'calorie_count' %}",
+      data: { period, patientId },
+    }).then(({ data }) => {
+      const subgroups = ["current_value", "optimal_value"];
+      const groups = d3
+        .map(data, (d) => d.date)
+        .keys()
+        .map((d) => moment(d, "DD/MM/YYYY").toDate())
         .reverse();
 
-    // Add X axis
-    var x = d3.scaleBand()
-        .domain(groups)
-        .range([0, width])
-        .padding([0.2])
+      // Add X axis
+      var x = d3.scaleBand().domain(groups).range([0, width]).padding([0.2]);
 
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(
-        d3.axisBottom(x)
-          .tickValues(x.domain().filter((d,i) => !(i%5)))
-          .tickFormat((d) => moment(d).format("MMM D"))
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(
+          d3
+            .axisBottom(x)
+            .tickValues(x.domain().filter((d, i) => !(i % 5)))
+            .tickFormat((d) => moment(d).format("MMM D"))
+        );
+
+      const yMax = d3.max(
+        data.map((x) =>
+          subgroups
+            .map((g) => parseInt(x[g]))
+            .reduce((total, v) => total + v, 0)
+        )
       );
 
-    const yMax = d3.max(data
-        .map(x => subgroups.map(g => parseInt(x[g]))
-        .reduce((total, v) => total + v, 0)));
+      // Add Y axis
+      var y = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+      svg.append("g").call(d3.axisLeft(y));
 
-    // Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, yMax])
-      .range([ height, 0 ]);
-    svg.append("g")
-      .call(d3.axisLeft(y));
+      // color palette = one color per subgroup
+      var color = d3
+        .scaleOrdinal()
+        .domain(subgroups)
+        .range(d3.schemeCategory20);
 
-    // color palette = one color per subgroup
-    var color = d3.scaleOrdinal()
-      .domain(subgroups)
-      .range(d3.schemeCategory20)
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("x", 0)
+        .attr("y", -8)
+        .text("Calories in/out");
 
-    svg.append("text")
-      .attr("text-anchor", "middle")
-      .attr("x", 0)
-      .attr("y", -8)
-      .text("Calories in/out")
+      //stack the data? --> stack per subgroup
+      var stackedData = d3.stack().keys(subgroups)(data);
 
-    //stack the data? --> stack per subgroup
-    var stackedData = d3.stack().keys(subgroups)(data)
-
-    // Show the bars
-    svg.append("g")
-      .selectAll("g")
-      // Enter in the stack data = loop key per key = group per group
-      .data(stackedData)
-      .enter().append("g")
-        .attr("fill", d => color(d.key))
+      // Show the bars
+      svg
+        .append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedData)
+        .enter()
+        .append("g")
+        .attr("fill", (d) => color(d.key))
         .selectAll("rect")
         // enter a second time = loop subgroup per subgroup to add all rectangles
-        .data(d => d)
-        .enter().append("rect")
-          .attr("x", d => x(moment(d.data.date, 'DD/MM/YYYY').toDate()))
-          .attr("y", d => y(d[1]))
-          .attr("height", d => y(d[0]) - y(d[1]))
-          .attr("width", x.bandwidth())
-  });
-}
+        .data((d) => d)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => x(moment(d.data.date, "DD/MM/YYYY").toDate()))
+        .attr("y", (d) => y(d[1]))
+        .attr("height", (d) => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth());
+    });
+  }
 </script>

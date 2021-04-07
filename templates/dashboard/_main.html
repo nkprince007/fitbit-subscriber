@@ -16,7 +16,7 @@
   }
 
   .main .section-title {
-    padding: .25rem;
+    padding: 0.25rem;
   }
 
   .heart-sleep {
@@ -30,27 +30,19 @@
     <div class="grid-item activity">
       <h6 class="section-title">Activity</h6>
       <div class="activity-grid">
-        <div>
-          {% include 'dashboard/activity/_active_zones.html' %}
-        </div>
-        <div>
-          {% include 'dashboard/activity/_metrics.html' %}
-        </div>
+        <div>{% include 'dashboard/activity/_active_zones.html' %}</div>
+        <div>{% include 'dashboard/activity/_metrics.html' %}</div>
       </div>
     </div>
     <div class="grid-item body-weight-fat">
       <h6 class="section-title">Body Weight & Fat</h6>
-      <div>
-        {% include 'dashboard/body_weight_fat/_metrics.html' %}
-      </div>
+      <div>{% include 'dashboard/body_weight_fat/_metrics.html' %}</div>
     </div>
   </div>
   <div class="right-col">
     <div class="grid-item nutrition">
       <h6 class="section-title">Nutrition</h6>
-      <div>
-        {% include 'dashboard/nutrition/_calorie_count.html' %}
-      </div>
+      <div>{% include 'dashboard/nutrition/_calorie_count.html' %}</div>
     </div>
     <div class="dual-section heart-sleep">
       <div class="grid-item">
@@ -58,9 +50,7 @@
       </div>
       <div class="grid-item sleep-cycles">
         <h6 class="section-title">Sleep Cycles</h6>
-        <div>
-          {% include 'dashboard/sleep_cycles/_sleep_zones.html' %}
-        </div>
+        <div>{% include 'dashboard/sleep_cycles/_sleep_zones.html' %}</div>
       </div>
     </div>
   </div>

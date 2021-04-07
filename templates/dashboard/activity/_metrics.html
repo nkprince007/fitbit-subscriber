@@ -13,92 +13,115 @@
 </div>
 
 <script>
-function redrawActivityMetrics({period, patientId}) {
-  const activityChartsEl = $('#activity-charts');
+  function redrawActivityMetrics({ period, patientId }) {
+    const activityChartsEl = $("#activity-charts");
 
-  // set the dimensions and margins of the graph
-  const margin = {top: 30, right: 10, bottom: 30, left: 30},
+    // set the dimensions and margins of the graph
+    const margin = { top: 30, right: 10, bottom: 30, left: 30 },
       width = activityChartsEl.width() / 2 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
-  //Read the data
-  axios({
-    method: 'post',
-    url: "{% url 'activity_metrics' %}",
-    data: {period, patientId},
-  }).then(({data}) => {
-    // group the data: I want to draw one line per group
-    const sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
-      .key(function(d) { return d.metric;})
-      .entries(data);
+    //Read the data
+    axios({
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      method: "post",
+      url: "{% url 'activity_metrics' %}",
+      data: { period, patientId },
+    }).then(({ data }) => {
+      // group the data: I want to draw one line per group
+      const sumstat = d3
+        .nest() // nest function allows to group the calculation per level of a factor
+        .key(function (d) {
+          return d.metric;
+        })
+        .entries(data);
 
-    // What is the list of groups?
-    allKeys = sumstat.map(function(d){return d.key})
+      // What is the list of groups?
+      allKeys = sumstat.map(function (d) {
+        return d.key;
+      });
 
-    // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
-    const svg = d3.select("#activity-charts")
-      .selectAll("uniqueChart")
-      .data(sumstat)
-      .enter()
-      .append("svg")
-        .attr('font-size', '12px')
+      // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
+      const svg = d3
+        .select("#activity-charts")
+        .selectAll("uniqueChart")
+        .data(sumstat)
+        .enter()
+        .append("svg")
+        .attr("font-size", "12px")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // Add X axis --> it is a date format
-    const x = d3.scaleTime()
-      .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
-      .range([ 0, width ]);
+      // Add X axis --> it is a date format
+      const x = d3
+        .scaleTime()
+        .domain(d3.extent(data, (d) => moment(d.date, "DD/MM/YYYY").toDate()))
+        .range([0, width]);
 
-    svg
-      .append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('MMM D')))
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(
+          d3
+            .axisBottom(x)
+            .ticks(3)
+            .tickFormat((d) => moment(d).format("MMM D"))
+        );
 
-    //Add Y axis
-    const yAxes = {};
-    svg.append("g")
-      .each(function (s) {
+      //Add Y axis
+      const yAxes = {};
+      svg.append("g").each(function (s) {
         const svg1 = d3.select(this);
-        const y = d3.scaleLinear()
-          .domain(d3.extent(s.values.map(s => +s.value)))
-          .range([ height, 0 ]);
+        const y = d3
+          .scaleLinear()
+          .domain(d3.extent(s.values.map((s) => +s.value)))
+          .range([height, 0]);
         yAxes[s.key] = y;
         svg1.call(d3.axisLeft(y).ticks(5));
       });
 
-    // color palette
-    const color = d3.scaleOrdinal()
-      .domain(allKeys)
-      .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+      // color palette
+      const color = d3
+        .scaleOrdinal()
+        .domain(allKeys)
+        .range([
+          "#e41a1c",
+          "#377eb8",
+          "#4daf4a",
+          "#984ea3",
+          "#ff7f00",
+          "#ffff33",
+          "#a65628",
+          "#f781bf",
+          "#999999",
+        ]);
 
-    // Draw the line
-    svg
-      .append("path")
+      // Draw the line
+      svg
+        .append("path")
         .attr("fill", "none")
-        .attr("stroke", 'black')
+        .attr("stroke", "black")
         .attr("stroke-width", 1)
         .each(function (s) {
           const path = d3.select(this);
           const y = yAxes[s.key];
-          path.attr("d", (d) => (
-            d3.line()
-              .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-              .y(d => y(+d.value))
-              (d.values)
-          ));
+          path.attr("d", (d) =>
+            d3
+              .line()
+              .x((d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+              .y((d) => y(+d.value))(d.values)
+          );
         });
 
-    // Add titles
-    svg
-      .append("text")
-      .attr("text-anchor", "middle")
-      .attr("y", -10)
-      .attr("x", width/2)
-      .text(d => d.key)
-  })
-}
+      // Add titles
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", -10)
+        .attr("x", width / 2)
+        .text((d) => d.key);
+    });
+  }
 </script>

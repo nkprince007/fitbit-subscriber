@@ -1,52 +1,77 @@
-{% load i18n %}
-{% load static %}
-
-{% autoescape on%}
+{% load i18n %} {% load static %} {% autoescape on%}
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% if DEBUG %}
+    <!-- <meta http-equiv="refresh" content="3" /> -->
+    {% endif %}
+    <title>Fitbit Dashboard</title>
+    <link
+      rel="shortcut icon"
+      href="{% static 'favicon.ico' %}"
+      type="image/x-icon"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'bootstrap/css/bootstrap.min.css' %}"
+    />
+    <link rel="stylesheet" href="{% static 'css/typeahead.css' %}" />
+    <script defer src="{% static 'fontawesome/js/all.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/typeahead.bundle.js' %}"></script>
+    <script src="{% static 'js/d3.v4.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'js/axios.min.js' %}"></script>
+    <script>
+      function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          var cookies = document.cookie.split(";");
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Roboto", sans-serif;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  {% if DEBUG %}
-  <!-- <meta http-equiv="refresh" content="3" /> -->
-  {% endif %}
-  <title>Fitbit Dashboard</title>
-  <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
-  <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
-  <script defer src="{% static 'fontawesome/js/all.min.js' %}"></script>
-  <script src="{% static 'bootstrap/js/jquery.min.js' %}"></script>
-  <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
-  <script src="{% static 'js/d3.v4.min.js' %}"></script>
-  <script src="{% static 'js/moment.min.js' %}"></script>
-  <script src="{% static 'js/axios.min.js' %}"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: "Roboto", sans-serif;
-    }
+      .btn:focus,
+      button:focus,
+      button:hover {
+        outline: none !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
+      }
 
-    .btn:focus, button:focus, button:hover {
-      outline: none !important;
-      -webkit-box-shadow: none !important;
-      box-shadow: none !important;
-    }
+      html,
+      body {
+        min-height: 100%;
+      }
+    </style>
+  </head>
 
-    html,
-    body {
-      min-height: 100%;
-    }
-  </style>
-</head>
-
-<body>
-  {% include "common/_navbar.html" %}
-  {% block content %} {% endblock %}
-</body>
-
+  <body>
+    {% include "common/_navbar.html" %} {% block content %} {% endblock %}
+  </body>
 </html>
 {% endautoescape %}

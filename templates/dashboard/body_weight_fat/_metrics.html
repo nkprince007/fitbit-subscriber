@@ -39,7 +39,7 @@
   }
 
   .label .label-name {
-    font-size: .75em;
+    font-size: 0.75em;
   }
 </style>
 
@@ -58,134 +58,167 @@
 </div>
 
 <script>
-function generateIdForKey(key) {
-  return key
-    .toLowerCase()
-    .replaceAll(new RegExp(/\(.*\)/g), '')
-    .trim()
-    .replaceAll(new RegExp(/\s+/g), '-');
-}
+  function generateIdForKey(key) {
+    return key
+      .toLowerCase()
+      .replaceAll(new RegExp(/\(.*\)/g), "")
+      .trim()
+      .replaceAll(new RegExp(/\s+/g), "-");
+  }
 
-function redrawBodyWeightFatCharts({period, patientId}) {
-  const activityChartsEl = $('#body-weight-fat-charts');
+  function redrawBodyWeightFatCharts({ period, patientId }) {
+    const activityChartsEl = $("#body-weight-fat-charts");
 
-  // set the dimensions and margins of the graph
-  const margin = {top: 30, right: 20, bottom: 30, left: 30},
+    // set the dimensions and margins of the graph
+    const margin = { top: 30, right: 20, bottom: 30, left: 30 },
       width = activityChartsEl.width() / 3 - margin.left - margin.right,
       height = activityChartsEl.width() / 3 - margin.top - margin.bottom;
 
-  //Read the data
-  axios({
-    method: 'post',
-    url: "{% url 'body_metrics' %}",
-    data: {period, patientId},
-  }).then(({data}) => {
-    // group the data: I want to draw one line per group
-    const sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
-      .key(function(d) { return d.metric;})
-      .entries(data);
+    //Read the data
+    axios({
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      method: "post",
+      url: "{% url 'body_metrics' %}",
+      data: { period, patientId },
+    }).then(({ data }) => {
+      // group the data: I want to draw one line per group
+      const sumstat = d3
+        .nest() // nest function allows to group the calculation per level of a factor
+        .key(function (d) {
+          return d.metric;
+        })
+        .entries(data);
 
-    // What is the list of groups?
-    allKeys = sumstat.map(function(d){return d.key})
+      // What is the list of groups?
+      allKeys = sumstat.map(function (d) {
+        return d.key;
+      });
 
-    // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
-    const svg = d3.select('#body-weight-fat-charts')
-      .selectAll("uniqueChart")
-      .data(sumstat)
-      .enter()
-      .append("svg")
-        .attr('font-size', '12px')
+      // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
+      const svg = d3
+        .select("#body-weight-fat-charts")
+        .selectAll("uniqueChart")
+        .data(sumstat)
+        .enter()
+        .append("svg")
+        .attr("font-size", "12px")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr('id', d => generateIdForKey(d.key))
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+        .append("g")
+        .attr("id", (d) => generateIdForKey(d.key))
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // Add X axis --> it is a date format
-    const x = d3.scaleLinear()
-      .domain(d3.extent(data, d => moment(d.date, 'DD/MM/YYYY').toDate()))
-      .range([0, width]);
-    svg
-      .append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).ticks(3).tickFormat(d => moment(d).format('MMM D')));
+      // Add X axis --> it is a date format
+      const x = d3
+        .scaleLinear()
+        .domain(d3.extent(data, (d) => moment(d.date, "DD/MM/YYYY").toDate()))
+        .range([0, width]);
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(
+          d3
+            .axisBottom(x)
+            .ticks(3)
+            .tickFormat((d) => moment(d).format("MMM D"))
+        );
 
-    // Add Y axis
-    const yAxes = {};
-    svg.append("g")
-      .each(function (s) {
+      // Add Y axis
+      const yAxes = {};
+      svg.append("g").each(function (s) {
         const svg1 = d3.select(this);
-        const y = d3.scaleLinear()
-          .domain(d3.extent(s.values.map(s => +s.value)))
-          .range([ height, 0 ]);
+        const y = d3
+          .scaleLinear()
+          .domain(d3.extent(s.values.map((s) => +s.value)))
+          .range([height, 0]);
         yAxes[s.key] = y;
         svg1.call(d3.axisLeft(y).ticks(5));
       });
 
-    // Color palette
-    const color = d3.scaleOrdinal()
-      .domain(allKeys)
-      .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+      // Color palette
+      const color = d3
+        .scaleOrdinal()
+        .domain(allKeys)
+        .range([
+          "#e41a1c",
+          "#377eb8",
+          "#4daf4a",
+          "#984ea3",
+          "#ff7f00",
+          "#ffff33",
+          "#a65628",
+          "#f781bf",
+          "#999999",
+        ]);
 
-    // Draw the line
-    svg.append("path")
-      .attr("fill", "none")
-      .attr("stroke", 'black')
-      .attr("stroke-width", 1)
-      .each(function (s) {
-        const path = d3.select(this);
-        const y = yAxes[s.key];
-        path.attr("d", (d) => (
-          d3.line()
-            .x(d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-            .y(d => y(+d.value))
-            (d.values)
-        ));
+      // Draw the line
+      svg
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 1)
+        .each(function (s) {
+          const path = d3.select(this);
+          const y = yAxes[s.key];
+          path.attr("d", (d) =>
+            d3
+              .line()
+              .x((d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+              .y((d) => y(+d.value))(d.values)
+          );
+        });
+
+      svg
+        .append("g")
+        .attr("id", (d) => `${generateIdForKey(d.key)}-value-group`);
+
+      // Draw circles
+      sumstat.forEach((set) => {
+        const y = yAxes[set.key];
+        const apiValues = set.values.filter((v) => v.metric_type === "api");
+        const manualValues = set.values.filter(
+          (v) => v.metric_type === "manual"
+        );
+
+        const cgCircle = svg
+          .select(`#${generateIdForKey(set.key)}-value-group`)
+          .selectAll(".circle-group")
+          .data(apiValues)
+          .enter();
+        cgCircle
+          .append("circle")
+          .attr("fill", "rgb(255, 127, 14)")
+          .attr("r", 4)
+          .attr("cx", (d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+          .attr("cy", (d) => y(+d.value));
+
+        const cgSquare = svg
+          .select(`#${generateIdForKey(set.key)}-value-group`)
+          .selectAll(".square-group")
+          .data(manualValues)
+          .enter();
+        cgSquare
+          .append("rect")
+          .attr("fill", "rgb(31, 119, 180)")
+          .attr("width", 8)
+          .attr("height", 8)
+          .attr("transform", function () {
+            return (
+              `translate(-${this.getAttribute("width") / 2}` +
+              `, -${this.getAttribute("height") / 2})`
+            );
+          })
+          .attr("x", (d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+          .attr("y", (d) => y(+d.value));
       });
 
-    svg.append('g')
-      .attr('id', d => `${generateIdForKey(d.key)}-value-group`);
-
-    // Draw circles
-    sumstat.forEach(set => {
-      const y = yAxes[set.key];
-      const apiValues = set.values.filter(v => v.metric_type === 'api');
-      const manualValues = set.values.filter(v => v.metric_type === 'manual');
-
-      const cgCircle = svg.select(`#${generateIdForKey(set.key)}-value-group`)
-        .selectAll('.circle-group')
-        .data(apiValues)
-        .enter();
-      cgCircle.append('circle')
-        .attr('fill', 'rgb(255, 127, 14)')
-        .attr('r', 4)
-        .attr('cx', d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-        .attr('cy', d => y(+d.value));
-
-      const cgSquare = svg.select(`#${generateIdForKey(set.key)}-value-group`)
-        .selectAll('.square-group')
-        .data(manualValues)
-        .enter();
-      cgSquare.append('rect')
-        .attr('fill', 'rgb(31, 119, 180)')
-        .attr('width', 8)
-        .attr('height', 8)
-        .attr('transform', function() {
-          return `translate(-${this.getAttribute('width') / 2}` +
-            `, -${this.getAttribute('height') / 2})`;
-        })
-        .attr('x', d => x(moment(d.date, 'DD/MM/YYYY').toDate()))
-        .attr('y', d => y(+d.value));
-    })
-
-    // Add titles
-    svg
-      .append("text")
-      .attr("text-anchor", "middle")
-      .attr("y", -21)
-      .attr("x", width/2)
-      .text(d => d.key)
-  })
-}
+      // Add titles
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", -21)
+        .attr("x", width / 2)
+        .text((d) => d.key);
+    });
+  }
 </script>

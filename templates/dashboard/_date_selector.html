@@ -29,9 +29,7 @@
 
 <div class="date-label">
   <label>Chosen date range</label>
-  <button id="reset-date" class="btn btn-sm btn-outline-primary">
-    Reset
-  </button>
+  <button id="reset-date" class="btn btn-sm btn-outline-primary">Reset</button>
 </div>
 
 <div id="date-selector">
@@ -53,18 +51,18 @@
   const milliSecondsInDay = 1000 * 60 * 60 * 24;
 
   function formatDate(date) {
-    return moment(date).format('MMM Do YYYY');
+    return moment(date).format("MMM Do YYYY");
   }
 
   function reconfigureDateRange(period) {
     currentDateRange = null;
-    const {start, end} = getCurrentRange(period);
+    const { start, end } = getCurrentRange(period);
     setDates(start, end);
   }
 
   function resetDate() {
     currentDateRange = null;
-    const {end, start} = getCurrentRange();
+    const { end, start } = getCurrentRange();
     setDates(start, end, true);
   }
 
@@ -81,13 +79,13 @@
       endDate = new Date();
       startDate = new Date();
       startDate.setTime(endDate.getTime() - period * milliSecondsInDay);
-      currentDateRange = {end: endDate, start: startDate};
+      currentDateRange = { end: endDate, start: startDate };
     }
-    return {...currentDateRange, period};
+    return { ...currentDateRange, period };
   }
 
   function previousRange(ev) {
-    let {period, end, start} = getCurrentRange();
+    let { period, end, start } = getCurrentRange();
     end.setTime(end.getTime() - period * milliSecondsInDay);
     start.setTime(start.getTime() - period * milliSecondsInDay);
     setDates(start, end, true);
@@ -95,7 +93,7 @@
   }
 
   function nextRange(ev) {
-    let {period, end, start} = getCurrentRange();
+    let { period, end, start } = getCurrentRange();
     end.setTime(end.getTime() + period * milliSecondsInDay);
     start.setTime(start.getTime() + period * milliSecondsInDay);
     setDates(start, end, true);
@@ -103,11 +101,11 @@
   }
 
   function setDates(start, end, newUpdate) {
-    const dateRangeStart = $('#date-range-start');
-    const dateRangeEnd = $('#date-range-end');
+    const dateRangeStart = $("#date-range-start");
+    const dateRangeEnd = $("#date-range-end");
     dateRangeStart.text(formatDate(start));
     dateRangeEnd.text(formatDate(end));
-    currentDateRange = {start, end};
+    currentDateRange = { start, end };
     globalStartDateInput.val(start.getTime());
     globalEndDateInput.val(end.getTime());
     if (newUpdate) {
@@ -118,31 +116,31 @@
   function initDateSelector(data) {
     let start, end, period;
     try {
-      if (!!data['startDate'] && !!data['endDate']) {
-        globalStartDateInput.val(data['startDate']);
-        globalEndDateInput.val(data['endDate']);
+      if (!!data["startDate"] && !!data["endDate"]) {
+        globalStartDateInput.val(data["startDate"]);
+        globalEndDateInput.val(data["endDate"]);
 
         end = new Date(parseInt(globalEndDateInput.val()));
         start = new Date(parseInt(globalStartDateInput.val()));
-        currentDateRange = {start, end};
-      } else if (!!data['startDate']) {
-        start = parseInt(data['startDate']);
+        currentDateRange = { start, end };
+      } else if (!!data["startDate"]) {
+        start = parseInt(data["startDate"]);
         period = parseInt(globalPeriodInput.val());
         globalStartDateInput.val(start);
         globalEndDateInput.val(start + period * milliSecondsInDay);
 
         start = new Date(start);
         end = new Date(start + period * milliSecondsInDay);
-        currentDateRange = {start, end};
-      } else if (!!data['endDate']) {
-        end = parseInt(data['endDate']);
+        currentDateRange = { start, end };
+      } else if (!!data["endDate"]) {
+        end = parseInt(data["endDate"]);
         period = parseInt(globalPeriodInput.val());
         globalEndDateInput.val(end);
         globalStartDateInput.val(end - period * milliSecondsInDay);
 
         end = new Date(end);
         start = new Date(end - period * milliSecondsInDay);
-        currentDateRange = {start, end};
+        currentDateRange = { start, end };
       } else {
         const range = getCurrentRange();
         end = range.end;
@@ -156,8 +154,8 @@
     }
 
     setDates(start, end);
-    $('#select-previous-date').on('click', previousRange);
-    $('#select-next-date').on('click', nextRange);
-    $('#reset-date').on('click', resetDate);
+    $("#select-previous-date").on("click", previousRange);
+    $("#select-next-date").on("click", nextRange);
+    $("#reset-date").on("click", resetDate);
   }
 </script>

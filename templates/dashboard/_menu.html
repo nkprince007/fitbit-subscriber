@@ -57,8 +57,8 @@
           <!-- <option value="90">Last 3 months</option> -->
         </select>
       </div>
-      <input id="global-start-date-input" type="hidden" name="startDate">
-      <input id="global-end-date-input" type="hidden" name="endDate">
+      <input id="global-start-date-input" type="hidden" name="startDate" />
+      <input id="global-end-date-input" type="hidden" name="endDate" />
     </form>
 
     {% include "dashboard/_date_selector.html" %}
@@ -92,7 +92,7 @@
       </table>
     </div>
   </div>
-{% include 'dashboard/activity/_activity_index_summary.html' %}
+  {% include 'dashboard/activity/_activity_index_summary.html' %}
 </div>
 
 <script>
@@ -106,8 +106,8 @@
 
   const substringMatcher = (strings) => {
     return function findMatches(q, cb) {
-      const substringRegex = new RegExp(q, 'i');
-      const matches = strings.filter(str => substringRegex.test(str));
+      const substringRegex = new RegExp(q, "i");
+      const matches = strings.filter((str) => substringRegex.test(str));
       cb(matches);
     };
   };
@@ -120,24 +120,26 @@
   const choosePeriod = (period) => {
     reconfigureDateRange(period);
     globalConfigForm.submit();
-  }
+  };
 
   const configureForm = async () => {
     globalLoading = true;
     try {
-      const data = Object.fromEntries(new URLSearchParams(window.location.search.replace('?', '')));
+      const data = Object.fromEntries(
+        new URLSearchParams(window.location.search.replace("?", ""))
+      );
       let patientId;
 
-      if (!!data['patientId']) {
-        globalSearchInput.val(data['patientId']);
-        patientId = data['patientId'];
+      if (!!data["patientId"]) {
+        globalSearchInput.val(data["patientId"]);
+        patientId = data["patientId"];
       } else {
         globalSearchInput.val(globalPatientIds[0] || 0);
         globalConfigForm.submit();
       }
 
-      if (!!data['period']) {
-        globalPeriodInput.val(data['period']);
+      if (!!data["period"]) {
+        globalPeriodInput.val(data["period"]);
       }
 
       initDateSelector(data);
@@ -147,7 +149,7 @@
       console.warn(err);
     }
     globalLoading = false;
-  }
+  };
 
   const addListeners = () => {
     globalPeriodInput.change(function (event) {
@@ -155,21 +157,24 @@
     });
 
     configureForm();
-  }
+  };
 
   const populatePatientDetails = async (patientId) => {
     if (!patientId) return;
-    const sexEl = $('#patient--sex');
-    const nameEl = $('#patient--name');
-    const ageEl = $('#patient--age');
+    const sexEl = $("#patient--sex");
+    const nameEl = $("#patient--name");
+    const ageEl = $("#patient--age");
 
     // TODO: fetch real patient data here
-    const patient = (await axios({
-      method: 'post',
-      data: {patientId},
-      url: "{% url 'patient_details' %}",
-    })).data;
-    const title = patient.sex.toLowerCase() === 'male' ? "Mr" : 'Mrs'
+    const patient = (
+      await axios({
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        method: "post",
+        data: { patientId },
+        url: "{% url 'patient_details' %}",
+      })
+    ).data;
+    const title = patient.sex.toLowerCase() === "male" ? "Mr" : "Mrs";
     nameEl.text(`${title}. ${patient.name}`);
     ageEl.text(patient.age);
     sexEl.text(patient.sex);
@@ -184,43 +189,52 @@
     redrawActivityMetrics(data);
     redrawBodyWeightFatCharts(data);
     redrawSleepZones(data);
-  }
+  };
 
   const populatePatients = (patients) => {
-    globalSearchInput.typeahead({
-      hint: true,
-      highlight: true,
-      minLength: 1,
-    }, {
-      name: 'patients',
-      source: substringMatcher(globalPatientIds),
-    }).bind("typeahead:selected", (event, value) => {
-      choosePatient(value);
+    globalSearchInput
+      .typeahead(
+        {
+          hint: true,
+          highlight: true,
+          minLength: 1,
+        },
+        {
+          name: "patients",
+          source: substringMatcher(globalPatientIds),
+        }
+      )
+      .bind("typeahead:selected", (event, value) => {
+        choosePatient(value);
+      });
+    $(".search-form-group .form-group .twitter-typeahead").css({
+      display: "block",
     });
-    $('.search-form-group .form-group .twitter-typeahead')
-      .css({display: 'block'});
     addListeners();
-  }
+  };
 
   $(document).ready(async function () {
-    $.fn.filterByData = function(prop, val) {
-      return this.filter(
-        function() { return $(this).data(prop)==val; }
-      );
+    $.fn.filterByData = function (prop, val) {
+      return this.filter(function () {
+        return $(this).data(prop) == val;
+      });
     };
 
-    globalConfigForm = $('#global-config-form');
-    globalSearchInput = $('#global-search');
+    globalConfigForm = $("#global-config-form");
+    globalSearchInput = $("#global-search");
     globalPeriodInput = $("#global--time-period-selector");
-    globalStartDateInput = $('#global-start-date-input');
-    globalEndDateInput = $('#global-end-date-input');
+    globalStartDateInput = $("#global-start-date-input");
+    globalEndDateInput = $("#global-end-date-input");
 
-    const patientIds = (await axios({
-      method: 'get',
-      url: "{% url 'patient_ids' %}",
-    })).data;
+    const patientIds = (
+      await axios({
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        method: "get",
+        url: "{% url 'patient_ids' %}",
+      })
+    ).data;
     globalPatientIds = patientIds;
 
-    populatePatients(patientIds.map((id) => ({id})));
+    populatePatients(patientIds.map((id) => ({ id })));
   });
 </script>

@@ -7,25 +7,36 @@
 
 <script>
   function getWeekStart(dataItem) {
-    const {start} = dataItem.weekRange;
-    return moment(start, 'DD/MM/YYYY').toDate();
+    const { start } = dataItem.weekRange;
+    return moment(start, "DD/MM/YYYY").toDate();
   }
 
-  function redrawActivityHeatmap({period, patientId}) {
-    const heatmapEl = $('#activity-heatmap');
+  function redrawActivityHeatmap({ period, patientId }) {
+    const heatmapEl = $("#activity-heatmap");
 
     // Labels of row and columns
-    const weeks = Array.from({length: Math.floor(parseInt(globalPeriodInput.val()) / 7.0)},
-                             (_, i) => `${-i}`).reverse();
-    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].reverse();
+    const weeks = Array.from(
+      { length: Math.floor(parseInt(globalPeriodInput.val()) / 7.0) },
+      (_, i) => `${-i}`
+    ).reverse();
+    const weekdays = [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+    ].reverse();
 
     // set the dimensions and margins of the graph
     const margin = { top: 10, right: 15, bottom: 10, left: 30 },
       width = heatmapEl.width() - margin.left - margin.right,
-      height = heatmapEl.width() * 7 / 11 - margin.top - margin.bottom;
+      height = (heatmapEl.width() * 7) / 11 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    const svg = d3.select("#activity-heatmap")
+    const svg = d3
+      .select("#activity-heatmap")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -34,65 +45,70 @@
 
     // Read the data
     axios({
-      method: 'post',
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      method: "post",
       url: "{% url 'activity_summary' %}",
-      data: {period, patientId},
-    })
-      .then(({data}) => {
-        let weeks = [];
-        data.forEach(d => {
-          const start = getWeekStart(d);
-          start.end = new Date(start.getTime() + (6 * 24 * 60 * 60 * 1000));
-          if (weeks.every((d) => d.getTime() !== start.getTime())) {
-            weeks.push(start);
-          }
-        });
-        weeks = Array.from(weeks).reverse();
-
-        // Build X scale:
-        const x = d3.scaleBand()
-          .range([0, width])
-          .domain(weeks)
-          .padding(0);
-
-        svg.append("g")
-          .attr('transform', `translate(0, ${height})`)
-          .call(
-            d3.axisBottom(x)
-              .tickSize(0)
-              .tickFormat((d) => {
-                const start = moment(d);
-                const end = moment(d.end);
-                if (weeks.length <= 4) {
-                  return `${start.format("MMM D")}-${end.format("MMM D")}`;
-                } else {
-                  return `${start.format("MM/DD")}`;
-                }
-              })
-          );
-
-        // Build Y scale and axis:
-        const y = d3.scaleBand()
-          .range([height, margin.bottom])
-          .domain(weekdays)
-          .padding(0);
-        svg.append("g")
-          .call(d3.axisLeft(y).tickSize(0));
-
-        // Build color scale
-        const myColor = d3.scaleLinear()
-          .range(["#ebedf0", "#216e39"])
-          .domain([1, 100]);
-
-        svg.selectAll()
-          .data(data, function (d) { return d.weekIndex + ':' + d.weekDay; })
-          .enter()
-          .append("rect")
-          .attr("x", d => x(getWeekStart(d)))
-          .attr("y", d => y(d.weekDay))
-          .attr("width", x.bandwidth())
-          .attr("height", y.bandwidth())
-          .style("fill", function (d) { return myColor(d.value) });
+      data: { period, patientId },
+    }).then(({ data }) => {
+      let weeks = [];
+      data.forEach((d) => {
+        const start = getWeekStart(d);
+        start.end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+        if (weeks.every((d) => d.getTime() !== start.getTime())) {
+          weeks.push(start);
+        }
       });
+      weeks = Array.from(weeks).reverse();
+
+      // Build X scale:
+      const x = d3.scaleBand().range([0, width]).domain(weeks).padding(0);
+
+      svg
+        .append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(
+          d3
+            .axisBottom(x)
+            .tickSize(0)
+            .tickFormat((d) => {
+              const start = moment(d);
+              const end = moment(d.end);
+              if (weeks.length <= 4) {
+                return `${start.format("MMM D")}-${end.format("MMM D")}`;
+              } else {
+                return `${start.format("MM/DD")}`;
+              }
+            })
+        );
+
+      // Build Y scale and axis:
+      const y = d3
+        .scaleBand()
+        .range([height, margin.bottom])
+        .domain(weekdays)
+        .padding(0);
+      svg.append("g").call(d3.axisLeft(y).tickSize(0));
+
+      // Build color scale
+      const myColor = d3
+        .scaleLinear()
+        .range(["#ebedf0", "#216e39"])
+        .domain([1, 100]);
+
+      svg
+        .selectAll()
+        .data(data, function (d) {
+          return d.weekIndex + ":" + d.weekDay;
+        })
+        .enter()
+        .append("rect")
+        .attr("x", (d) => x(getWeekStart(d)))
+        .attr("y", (d) => y(d.weekDay))
+        .attr("width", x.bandwidth())
+        .attr("height", y.bandwidth())
+        .style("fill", function (d) {
+          return myColor(d.value);
+        });
+    });
   }
 </script>
