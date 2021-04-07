@@ -1,5 +1,6 @@
 from base64 import b64encode
 from urllib.parse import urljoin
+import traceback
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -84,7 +85,8 @@ def auth_complete(request):
             fitbit_user = User.objects.get(username=user_id).fb_auth
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
-        return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        tb = traceback.format_exc()
+        return Response({'error': tb}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'profile': profile}, status=status.HTTP_200_OK)
 
 
