@@ -117,12 +117,12 @@ def get_activity_metrics(request):
         metrics.append({
             'date': format_date(summary.date),
             'metric': 'Distance travelled (m)',
-            'value': summary.distance_travelled,
+            'value': summary.distance_travelled * 1000  # km to m,
         })
         metrics.append({
             'date': format_date(summary.date),
             'metric': 'Active Duration (hrs)',
-            'value': summary.active_duration,
+            'value': summary.active_duration / 60  # min to hrs,
         })
 
     if len(metrics) == 0:

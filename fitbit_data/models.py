@@ -44,7 +44,7 @@ class ActivitySummary(models.Model):
         distances = summary.get('distances')
         for distance in distances:
             if distance.get('activity') == 'total':
-                return distance.get('distance') * 1000  # km to m
+                return distance.get('distance')
         return 0
 
     @property
