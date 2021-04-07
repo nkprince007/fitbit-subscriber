@@ -51,7 +51,7 @@ class ActivitySummary(models.Model):
     def activity_factor(self):
         summary = self.data.get('summary')
         if not summary:
-            return 0
+            return 1.2  # assuming sedentary
 
         sedentary = summary.get('sedentaryMinutes')
         very_active = summary.get('veryActiveMinutes')

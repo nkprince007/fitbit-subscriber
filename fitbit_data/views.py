@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from fitbit_data.models import FoodSummary
 from random import randint
 
 from django.shortcuts import get_object_or_404, render
@@ -142,17 +143,30 @@ def get_activity_metrics(request):
 
 @api_view(('POST',))
 def get_calorie_count(request):
-    period = get_period(request)
     patient_id = get_patient_id(request)
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+    bmr = fb_user.basal_metabolic_rate
 
-    return Response([
-        {
-            'date': format_date(datetime.today() - timedelta(i)),
-            'current_value': randint(0, 100),
-            'optimal_value': randint(0, 100),
-        }
-        for i in range(period)
-    ])
+    start_date, end_date = get_range(request)
+    activity_summaries = fb_user.activity_summary.filter(
+        date__gte=start_date, date__lte=end_date).order_by('date')
+    food_summaries = fb_user.food_summary.filter(
+        date__gte=start_date, date__lte=end_date).order_by('date')
+
+    calories = []
+    for food_summary in food_summaries:
+        activity_summary = activity_summaries.filter(
+            date=food_summary.date).first()
+        activity_factor = (activity_summary.activity_factor
+                           if activity_summary else 1.2)
+        optimal_value = bmr * activity_factor
+
+        calories.append({
+            'date': format_date(food_summary.date),
+            'current_value': food_summary.data.get('summary').get('calories', 0),
+            'optimal_value': optimal_value,
+        })
+    return Response(calories)
 
 
 @api_view(('POST',))

@@ -2,7 +2,26 @@
 <div id="nutrition-bar-plot"></div>
 
 <script>
-  function redrawNutritionBarPlots({ period, patientId }) {
+  function getDatesInRange(start, end) {
+    const dates = [];
+    const startDate = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate()
+    );
+    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    for (
+      let dt = new Date(startDate);
+      dt <= end;
+      dt.setDate(dt.getDate() + 1)
+    ) {
+      dates.push(new Date(dt));
+    }
+    return dates;
+  }
+
+  function redrawNutritionBarPlots({ range, patientId }) {
     const barPlotEl = $("#nutrition-bar-plot");
 
     // set the dimensions and margins of the graph
@@ -24,14 +43,10 @@
       headers: { "X-CSRFToken": getCookie("csrftoken") },
       method: "post",
       url: "{% url 'calorie_count' %}",
-      data: { period, patientId },
+      data: { range, patientId },
     }).then(({ data }) => {
       const subgroups = ["current_value", "optimal_value"];
-      const groups = d3
-        .map(data, (d) => d.date)
-        .keys()
-        .map((d) => moment(d, "DD/MM/YYYY").toDate())
-        .reverse();
+      const groups = getDatesInRange(range.start, range.end);
 
       // Add X axis
       var x = d3.scaleBand().domain(groups).range([0, width]).padding([0.2]);
@@ -42,7 +57,19 @@
         .call(
           d3
             .axisBottom(x)
-            .tickValues(x.domain().filter((d, i) => !(i % 5)))
+            .tickValues(
+              x
+                .domain()
+                .filter((d, i) =>
+                  x.domain().length < 14
+                    ? true
+                    : x.domain().length <= 21
+                    ? i % 2 === 0
+                    : x.domain().length <= 35
+                    ? i % 5 === 0
+                    : i % 7 === 0
+                )
+            )
             .tickFormat((d) => moment(d).format("MMM D"))
         );
 
@@ -69,7 +96,7 @@
         .attr("text-anchor", "middle")
         .attr("x", 0)
         .attr("y", -8)
-        .text("Calories in/out");
+        .text("Calorie intake");
 
       //stack the data? --> stack per subgroup
       var stackedData = d3.stack().keys(subgroups)(data);
