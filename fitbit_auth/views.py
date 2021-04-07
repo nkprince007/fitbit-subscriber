@@ -79,15 +79,12 @@ def auth_complete(request):
     try:
         credentials = requests.post(url, data=data, headers=headers).json()
         user_id = credentials.get('user_id')
-        if not User.objects.filter(username=user_id).exists():
-            fitbit_user = create_user_profile(credentials)
-        else:
-            fitbit_user = User.objects.get(username=user_id).fb_auth
+        fitbit_user = create_user_profile(credentials)
         profile = fitbit_user.client.user_profile_get(user_id).get('user')
     except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
         tb = traceback.format_exc()
-        return Response({'error': tb, 'credentials': credentials}, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'profile': profile, 'credentials': credentials}, status=status.HTTP_200_OK)
+        return Response({'error': tb}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'profile': profile}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])

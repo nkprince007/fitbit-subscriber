@@ -198,9 +198,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Fitbit OAuth Configuration
 
-FITBIT_CLIENT_ID = os.environ.get('FITBIT_CLIENT_ID', '22BRS8')
+FITBIT_CLIENT_ID = os.environ.get('FITBIT_CLIENT_ID', '22CD9P')
 FITBIT_CLIENT_SECRET = os.environ.get('FITBIT_CLIENT_SECRET',
-                                      '17ab02407fe2d0d38a3c968e9a740a6d')
+                                      '393ccc92f9217f7fe17a0f6f56a48b44')
 FITBIT_SUBSCRIBER_VERIFICATION_CODE = os.environ.get(
     'FITBIT_SUBSCRIBER_VERIFICATION_CODE',
     'fdaaebbd1ac8697d7aa750011c7c6a07e88ca14ea2950588c2bbcb0fbb22137d')

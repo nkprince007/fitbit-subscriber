@@ -41,11 +41,15 @@ def create_user_profile(credentials: dict):
         timezone.timedelta(seconds=credentials.get('expires_in')))
     scope = credentials.get('scope')
     user_id = credentials.get('user_id')
-    user = User.objects.create(username=user_id)
-    fitbit_user = FitbitUser.objects.create(user=user,
-                                            scope=scope,
-                                            refresh_token=refresh_token,
-                                            access_token=access_token,
-                                            expires_at=expires_at)
-    add_subscription(fitbit_user)
+    user, _ = User.objects.get_or_create(username=user_id)
+    data = {
+        'scope': scope,
+        'refresh_token': refresh_token,
+        'access_token': access_token,
+        'expires_at': expires_at
+    }
+    fitbit_user, created = FitbitUser.objects.update_or_create(
+        user=user, defaults=data)
+    if created:
+        add_subscription(fitbit_user)
     return fitbit_user
