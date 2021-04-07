@@ -32,13 +32,14 @@ def get_patient_details(request):
 
 @api_view(('POST', ))
 def get_activity_summary(request):
-    period = get_period(request)
-    user = get_object_or_404(User, id=get_patient_id(request))
-    bmr = user.fb_auth.basal_metabolic_rate
+    patient_id = get_patient_id(request)
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+    bmr = fb_user.basal_metabolic_rate
 
-    today = datetime.today()
-    start_date = today - timedelta(days=period)
-    summaries = user.fb_auth.activity_summary.filter(date__gte=start_date)
+    start_date, end_date = get_range(request)
+    summaries = fb_user.activity_summary.filter(
+        date__gte=start_date, date__lte=end_date)
+
     response = []
     for summary in summaries:
         response.append({
@@ -56,7 +57,7 @@ def get_activity_summary(request):
     return Response({
         'summaries': response,
         'startDate': format_date(get_week_start_date(start_date)),
-        'endDate': format_date(get_week_end_date(today))
+        'endDate': format_date(get_week_end_date(end_date))
     })
 
 
@@ -79,6 +80,15 @@ def get_activity_zones(request):
             'Fairly active': data.get('fairlyActiveMinutes', 0),
             'Very active': data.get('veryActiveMinutes', 0),
         })
+
+    if len(zones) == 0:
+        zones = [{
+            'date': format_date(end_date),
+            'Sedentary': 0,
+            'Lightly active': 0,
+            'Fairly active': 0,
+            'Very active': 0,
+        }]
 
     return Response(zones)
 
@@ -115,6 +125,18 @@ def get_activity_metrics(request):
             'value': summary.active_duration,
         })
 
+    if len(metrics) == 0:
+        metrics = [
+            {
+                'date': format_date(end_date),
+                'metric': metric,
+                'value': 0,
+            }
+            for metric in ['Step Count',
+                           'Flights climbed',
+                           'Distance travelled (m)',
+                           'Active Duration (hrs)']
+        ]
     return Response(metrics)
 
 
@@ -150,6 +172,13 @@ def get_body_fat_metrics(request):
             'date': format_date(log.date),
             'metric': 'Body Fat (%)'
         })
+    if len(fat_logs) == 0:
+        response_data = [{
+            'value': 0,
+            'metric_type': 'dummy',
+            'date': format_date(end_date),
+            'metric': 'Body Fat (%)'
+        }]
 
     return Response(response_data)
 
@@ -178,6 +207,18 @@ def get_body_weight_metrics(request):
             'metric': 'Body Weight (kgs)'
         })
 
+    if len(weight_logs) == 0:
+        response_data = [{
+            'value': 0,
+            'metric_type': 'dummy',
+            'date': format_date(end_date),
+            'metric': 'Body Mass Index (BMI)'
+        }, {
+            'value': 0,
+            'metric_type': 'dummy',
+            'date': format_date(end_date),
+            'metric': 'Body Weight (kgs)'
+        }]
     return Response(response_data)
 
 

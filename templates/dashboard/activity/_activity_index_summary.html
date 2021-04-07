@@ -11,7 +11,7 @@
     return moment(start, "DD/MM/YYYY").toDate();
   }
 
-  function redrawActivityHeatmap({ period, patientId }) {
+  function redrawActivityHeatmap({ range, patientId }) {
     const heatmapEl = $("#activity-heatmap");
 
     // Labels of row and columns
@@ -44,7 +44,7 @@
       headers: { "X-CSRFToken": getCookie("csrftoken") },
       method: "post",
       url: "{% url 'activity_summary' %}",
-      data: { period, patientId },
+      data: { range, patientId },
     }).then(({ data }) => {
       const { summaries } = data;
       const startDate = moment(data.startDate, "DD/MM/YYYY").toDate();
