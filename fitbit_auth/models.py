@@ -24,8 +24,7 @@ class FitbitUser(models.Model):
 
     @cached_property_with_ttl(ttl=5 * 60)  # cache invalidates after 5 minutes
     def basal_metabolic_rate(self) -> Optional[float]:
-        fb_client = self.client
-        profile = fb_client.user_profile_get().get('user')
+        profile = self.profile_data
         gender = profile.get('gender').upper()
         height = profile.get('height')
         weight = profile.get('weight')
