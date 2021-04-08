@@ -58,9 +58,10 @@ def get_activity_summary(request):
         response.append({
             'weekIndex': 1,
             'weekDay': summary.date.strftime('%a'),
-            'value': (summary.data.get('summary').get('caloriesOut') / bmr
-                      if summary.data and summary.data.get('summary')
-                      and summary.data.get('summary').get('caloriesOut') else 0),
+            'physicalActivityLevel': (
+                summary.data.get('summary').get('caloriesOut') / bmr
+                if summary.data and summary.data.get('summary')
+                and summary.data.get('summary').get('caloriesOut') else 0),
             'date': format_date(summary.date),
             'weekRange': {
                 'start': format_date(get_week_start_date(summary.date)),
