@@ -25,12 +25,12 @@
     const barPlotEl = $("#nutrition-bar-plot");
 
     // set the dimensions and margins of the graph
-    var margin = { top: 20, right: 30, bottom: 20, left: 50 },
+    const margin = { top: 20, right: 30, bottom: 20, left: 50 },
       width = barPlotEl.width() - margin.left - margin.right,
       height = 200 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3
+    const svg = d3
       .select("#nutrition-bar-plot")
       .append("svg")
       .attr("font-size", "12px")
@@ -45,8 +45,11 @@
         const groups = getDatesInRange(range.start, range.end);
 
         // Add X axis
-        var x = d3.scaleBand().domain(groups).range([0, width]).padding([0.2]);
-
+        const x = d3
+          .scaleBand()
+          .domain(groups)
+          .range([0, width])
+          .padding([0.2]);
         svg
           .append("g")
           .attr("transform", "translate(0," + height + ")")
@@ -78,11 +81,11 @@
         );
 
         // Add Y axis
-        var y = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+        const y = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
         svg.append("g").call(d3.axisLeft(y));
 
         // color palette = one color per subgroup
-        var color = d3
+        const color = d3
           .scaleOrdinal()
           .domain(subgroups)
           .range(d3.schemeCategory20);
@@ -95,7 +98,7 @@
           .text("Calorie intake");
 
         //stack the data? --> stack per subgroup
-        var stackedData = d3.stack().keys(subgroups)(data);
+        const stackedData = d3.stack().keys(subgroups)(data);
 
         // Show the bars
         svg

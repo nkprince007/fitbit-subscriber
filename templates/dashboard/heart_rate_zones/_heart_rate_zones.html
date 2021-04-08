@@ -1,4 +1,49 @@
 {% load static %}
+<div id="heart-rate-legend"></div>
+<div id="heart-rate-bar-plot"></div>
+<div id="resting-heart-rates"></div>
+
+<style>
+  #resting-heart-rates {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #heart-rate-bar-plot .yAxis .tick {
+    visibility: hidden;
+  }
+
+  #heart-rate-bar-plot .yAxis .tick:nth-child(3n) {
+    visibility: visible;
+  }
+
+  #heart-rate-legend {
+    position: absolute;
+    top: 0.5em;
+    right: 1em;
+  }
+
+  #heart-rate-legend .zone {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 12px;
+  }
+
+  #heart-rate-legend .zone .square {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    border-radius: 1000vw;
+  }
+
+  #heart-rate-legend .zone .text {
+    display: inline-block;
+    margin: 0;
+    margin-left: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+</style>
 
 <script>
   function average(arr) {
@@ -8,7 +53,9 @@
   }
 
   function parseHeartRateSummaries(data) {
-    return data.map((summary) => {
+    let globalMin = Infinity;
+    let globalMax = -Infinity;
+    const results = data.map((summary) => {
       const restingHeartRate = average(
         summary.data.map((hrData) => hrData.value.restingHeartRate)
       );
@@ -20,10 +67,13 @@
 
       const values = {};
       for (const [key, value] of Object.entries(zones)) {
+        if (key === "Out of Range") continue;
         values[key] = value.reduce(
           (acc, curr) => {
             const min = Math.min(acc.min, curr.min);
             const max = Math.max(acc.max, curr.max);
+            globalMin = Math.min(min, globalMin);
+            globalMax = Math.max(max, globalMax);
             return { ...curr, min, max };
           },
           { min: Infinity, max: -Infinity }
@@ -36,15 +86,161 @@
         restingHeartRate,
       };
     });
+    results.max = globalMax;
+    results.min = globalMin;
+    return results;
+  }
+
+  function drawRestingHeartRates(results, dates, options) {
+    const { width, margin, x, y } = options;
+    const resultDates = results.map((r) =>
+      moment(r.date, "YYYY-MM-DD").toDate().getTime()
+    );
+
+    const restingHeartRates = dates.map((date) => {
+      if (resultDates.includes(date.getTime())) {
+        const result = results.find(
+          (result) =>
+            moment(result.date, "YYYY-MM-DD").toDate().getTime() ===
+            date.getTime()
+        );
+        return { date, value: result.restingHeartRate || "-" };
+      }
+      return { date, value: "-" };
+    });
+
+    const heartRatesSvg = d3
+      .select("#heart-rate-bar-plot")
+      .append("svg")
+      .attr("font-size", "12px")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", 40)
+      .style("margin-top", "12px")
+      .append("g")
+      .attr("transform", "translate(" + margin.left + ",20)");
+
+    d3.select("#heart-rate-bar-plot")
+      .append("div")
+      .style("position", "absolute")
+      .style("bottom", "4px")
+      .style("line-height", "2ch")
+      .style("font-size", "0.8rem")
+      .style("font-weight", "bold")
+      .style("width", "10ch")
+      .style("text-align", "center")
+      .text("Resting Heart Rate (bpm)");
+
+    heartRatesSvg
+      .selectAll(".rate")
+      .data(restingHeartRates)
+      .enter()
+      .append("text")
+      .attr("class", "rate")
+      .attr("x", (d) => x(d.date))
+      .attr("font-size", 18)
+      .attr("font-weight", "bold")
+      .attr("transform", `translate(${x.bandwidth() / 2})`)
+      .attr("dominant-baseline", "middle")
+      .attr("text-anchor", "middle")
+      .text((d) => d.value);
   }
 
   function redrawHeartRateZones({ patientId, range }) {
+    const barPlotEl = $("#heart-rate-bar-plot");
+    const legendEl = d3.select("#heart-rate-legend");
+    const restingHeartRatesEl = d3.select("#resting-heart-rates");
+    const zoneTypes = ["Cardio", "Fat Burn", "Peak"];
+    const colors = zoneTypes.map((_, i) => d3.schemeCategory20[i]);
+
+    zoneTypes.forEach((zoneType, i) => {
+      const zone = legendEl.append("div").attr("class", "zone");
+      zone
+        .append("div")
+        .attr("class", "square")
+        .style("background-color", colors[i]);
+      zone.append("p").attr("class", "text").text(zoneType);
+    });
+
+    // set the dimensions and margins of the graph
+    const margin = {
+        top: 10 / zoneTypes.length,
+        right: 30,
+        bottom: 20,
+        left: 50,
+      },
+      width = barPlotEl.width() - margin.left - margin.right,
+      height = (150 - margin.top - margin.bottom) / zoneTypes.length;
+
     makeRequest("post", "{% url 'heart_rate_zones' %}", {
       range,
       patientId,
     }).then((data) => {
       const results = parseHeartRateSummaries(data);
-      console.log(results);
+      const dates = getDatesInRange(range.start, range.end);
+
+      const x = d3.scaleBand().domain(dates).range([0, width]).padding([0.2]);
+      const y = d3
+        .scaleLinear()
+        .domain([results.min, results.max])
+        .range([height, 0]);
+
+      const drawHeartRates = (zoneType, zoneIndex) => {
+        // append the svg object to the body of the page
+        const svg = d3
+          .select("#heart-rate-bar-plot")
+          .append("svg")
+          .attr("class", `zone-${zoneIndex}`)
+          .attr("font-size", "12px")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
+
+        // Add the X Axis
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(
+            d3
+              .axisBottom(x)
+              .tickValues(
+                x
+                  .domain()
+                  .filter((d, i) =>
+                    x.domain().length < 14
+                      ? true
+                      : x.domain().length <= 21
+                      ? i % 2 === 0
+                      : x.domain().length <= 35
+                      ? i % 5 === 0
+                      : i % 7 === 0
+                  )
+              )
+              .tickFormat((d) => moment(d).format("MMM D"))
+          );
+
+        // Add the Y Axis
+        svg.append("g").attr("class", "yAxis").call(d3.axisLeft(y));
+
+        // Add rectangles
+        svg
+          .selectAll(".bar")
+          .data(results)
+          .enter()
+          .append("rect")
+          .attr("class", "bar")
+          .attr("fill", colors[zoneIndex])
+          .attr("x", (d) => x(moment(d.date, "YYYY-MM-DD").toDate()))
+          .attr("width", x.bandwidth())
+          .attr("y", (d) => y(d.values[zoneType].max))
+          .attr("height", (d) => height - y(d.values[zoneType].min));
+      };
+
+      zoneTypes.forEach((zoneType, i) => drawHeartRates(zoneType, i));
+      drawRestingHeartRates(results, dates, { width, height, x, y, margin });
     });
   }
 </script>
