@@ -3,7 +3,7 @@ setup:
     - plan: heroku-postgresql
       as: DATABASE
     - plan: heroku-redis
-      as: REDIS
+      as: HEROKU_REDIS_WHITE
 build:
   docker:
     web: Dockerfile.heroku

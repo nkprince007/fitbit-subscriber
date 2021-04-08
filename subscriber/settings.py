@@ -224,7 +224,7 @@ if DEBUG:
     CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 else:
     BROKER_URL = (f'redis://{REDIS_ADDRESS}:{REDIS_PORT}' if not HEROKU
-                  else os.environ.get('REDIS_URL'))
+                  else os.environ.get('HEROKU_REDIS_WHITE_URL'))
     CELERY_RESULT_BACKEND = BROKER_URL
     CELERY_ACCEPT_CONTENT = ['pickle']
     CELERY_TASK_SERIALIZER = 'pickle'
