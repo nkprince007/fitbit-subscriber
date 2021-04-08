@@ -133,21 +133,22 @@
       const data = Object.fromEntries(
         new URLSearchParams(window.location.search.replace("?", ""))
       );
-      let patientId;
-
-      if (!!data["patientId"]) {
-        globalSearchInput.val(data["patientId"]);
-        patientId = data["patientId"];
-      } else {
-        globalSearchInput.val(formatPatient(globalPatientsList[0]) || 0);
-        globalConfigForm.submit();
-      }
 
       if (!!data["period"]) {
         globalPeriodInput.val(data["period"]);
       }
 
       initDateSelector(data);
+
+      if (!!data["patientId"]) {
+        globalSearchInput.val(data["patientId"]);
+        patientId = data["patientId"];
+      } else {
+        globalSearchInput.val(
+          (globalPatientsList[0] && globalPatientsList[0].id) || 0
+        );
+        globalConfigForm.submit();
+      }
 
       await populatePatientDetails(patientId);
     } catch (err) {
