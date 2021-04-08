@@ -26,21 +26,11 @@
       <div class="search-form-group">
         <div class="form-group">
           <label for="global-search">Patient search</label>
-          <input
-            class="form-control flex-fill"
-            type="search"
-            placeholder="Search"
-            aria-label="Search"
-            id="global-search-display"
-            autocomplete="off"
-            data-provide="typeahead"
-          />
-          <input
-            class="form-control flex-fill"
-            type="hidden"
-            id="global-search"
+          <select
+            class="form-control"
             name="patientId"
-          />
+            id="global-search"
+          ></select>
         </div>
         <div class="submit-button">
           <button type="submit" class="btn btn-primary mx-auto">
@@ -110,17 +100,7 @@
   let globalEndDateInput;
 
   const getPatients = async () => {
-    return makeRequest("get", "{% url 'patients' %}");
-  };
-
-  const choosePatient = (patient) => {
-    globalSearchInput.val(patient.user);
-    globalConfigForm.submit();
-  };
-
-  const choosePeriod = (period) => {
-    reconfigureDateRange(period);
-    globalConfigForm.submit();
+    globalPatientsList = await makeRequest("get", "{% url 'patients' %}");
   };
 
   const formatPatient = (patient) => {
@@ -139,15 +119,16 @@
       }
 
       initDateSelector(data);
+      let patientId;
 
       if (!!data["patientId"]) {
-        globalSearchInput.val(data["patientId"]);
         patientId = data["patientId"];
       } else {
         globalSearchInput.val(
           (globalPatientsList[0] && globalPatientsList[0].id) || 0
         );
         globalConfigForm.submit();
+        return;
       }
 
       await populatePatientDetails(patientId);
@@ -158,8 +139,14 @@
   };
 
   const addListeners = () => {
+    globalSearchInput.change(function (event) {
+      globalConfigForm.submit();
+    });
+
     globalPeriodInput.change(function (event) {
-      choosePeriod(event.target.value);
+      const period = event.target.value;
+      reconfigureDateRange(period);
+      globalConfigForm.submit();
     });
 
     configureForm();
@@ -170,7 +157,6 @@
     const sexEl = $("#patient--sex");
     const nameEl = $("#patient--name");
     const ageEl = $("#patient--age");
-    const searchDisplayEl = $("#global-search-display");
 
     const patient = await makeRequest("post", "{% url 'patient_details' %}", {
       patientId,
@@ -181,7 +167,6 @@
     nameEl.text(`${title}. ${fullName}`);
     ageEl.text(age);
     sexEl.text(gender);
-    searchDisplayEl.val(formatPatient({ profile_data: patient }));
 
     const data = {
       patientId: parseInt(patientId, 10),
@@ -198,39 +183,11 @@
   };
 
   const populatePatients = () => {
-    const dataSource = new Bloodhound({
-      datumTokenizer: (datum) =>
-        Bloodhound.tokenizers.whitespace(
-          datum.profile_data.fullName,
-          datum.profile_data.age
-        ),
-      queryTokenizer: Bloodhound.tokenizers.whitespace,
-      identify: (p) => p.id,
-      local: globalPatientsList,
+    globalPatientsList.forEach((patient) => {
+      globalSearchInput.append(
+        `<option value="${patient.user}">${formatPatient(patient)}</option>`
+      );
     });
-
-    $("#global-search-display")
-      .typeahead(
-        {
-          hint: true,
-          highlight: true,
-          minLength: 1,
-        },
-        {
-          name: "patients",
-          display: (p) => formatPatient(p),
-          source: dataSource.ttAdapter(),
-          suggestion: (p) => `<div>${formatPatient(p)}</div>`,
-        }
-      )
-      .bind("typeahead:selected", (event, value) => {
-        choosePatient(value);
-      });
-
-    $(".search-form-group .form-group .twitter-typeahead").css({
-      display: "block",
-    });
-
     addListeners();
   };
 
@@ -247,7 +204,7 @@
     globalStartDateInput = $("#global-start-date-input");
     globalEndDateInput = $("#global-end-date-input");
 
-    globalPatientsList = await getPatients();
+    await getPatients();
     populatePatients();
   });
 </script>
