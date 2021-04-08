@@ -46,10 +46,13 @@ def create_user_profile(credentials: dict):
         'scope': scope,
         'refresh_token': refresh_token,
         'access_token': access_token,
-        'expires_at': expires_at
+        'expires_at': expires_at,
     }
     fitbit_user, created = FitbitUser.objects.update_or_create(
         user=user, defaults=data)
+    profile = fitbit_user.client.user_profile_get(user_id).get('user')
+    fitbit_user.profile_data = profile
+    fitbit_user.save()
     if created:
         add_subscription(fitbit_user)
     return fitbit_user
