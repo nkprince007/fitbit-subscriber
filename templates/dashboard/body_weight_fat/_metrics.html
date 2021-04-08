@@ -123,7 +123,11 @@
       const yAxes = {};
       svg.append("g").each(function (s) {
         const svg1 = d3.select(this);
-        const y = d3.scaleLinear().domain([10, 125]).range([height, 0]);
+        const values = s.values.map((s) => +s.value);
+        const y = d3
+          .scaleLinear()
+          .domain([Math.floor(d3.min(values)), Math.ceil(d3.max(values))])
+          .range([height, 0]);
         yAxes[s.key] = y;
         svg1.call(d3.axisLeft(y).ticks(5));
       });
