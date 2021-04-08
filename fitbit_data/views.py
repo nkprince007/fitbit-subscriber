@@ -87,7 +87,7 @@ def get_activity_zones(request):
         data = summary.data.get('summary')
         zones.append({
             'date': format_date(summary.date),
-            'Sedentary': data.get('sedentaryMinutes', 0),
+            # 'Sedentary': data.get('sedentaryMinutes', 0),
             'Lightly active': data.get('lightlyActiveMinutes', 0),
             'Fairly active': data.get('fairlyActiveMinutes', 0),
             'Very active': data.get('veryActiveMinutes', 0),
@@ -96,7 +96,7 @@ def get_activity_zones(request):
     if len(zones) == 0:
         zones = [{
             'date': format_date(end_date),
-            'Sedentary': 0,
+            # 'Sedentary': 0,
             'Lightly active': 0,
             'Fairly active': 0,
             'Very active': 0,
