@@ -31,10 +31,15 @@
             type="search"
             placeholder="Search"
             aria-label="Search"
-            id="global-search"
-            name="patientId"
+            id="global-search-display"
             autocomplete="off"
             data-provide="typeahead"
+          />
+          <input
+            class="form-control flex-fill"
+            type="hidden"
+            id="global-search"
+            name="patientId"
           />
         </div>
         <div class="submit-button">
@@ -100,9 +105,19 @@
   let globalSearchInput;
   let globalPeriodInput;
   let globalLoading;
-  let globalPatientIds;
+  let globalPatientsList;
   let globalStartDateInput;
   let globalEndDateInput;
+
+  const getPatients = async () => {
+    return (
+      await axios({
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        method: "get",
+        url: "{% url 'patients' %}",
+      })
+    ).data;
+  };
 
   const substringMatcher = (strings) => {
     return function findMatches(q, cb) {
@@ -112,14 +127,18 @@
     };
   };
 
-  const choosePatient = (patientId) => {
-    globalSearchInput.val(patientId);
+  const choosePatient = (patient) => {
+    globalSearchInput.val(patient.user);
     globalConfigForm.submit();
   };
 
   const choosePeriod = (period) => {
     reconfigureDateRange(period);
     globalConfigForm.submit();
+  };
+
+  const formatPatient = (patient) => {
+    return `${patient.profile_data.fullName}, ${patient.profile_data.age} (${patient.profile_data.gender[0]})`;
   };
 
   const configureForm = async () => {
@@ -134,7 +153,7 @@
         globalSearchInput.val(data["patientId"]);
         patientId = data["patientId"];
       } else {
-        globalSearchInput.val(globalPatientIds[0] || 0);
+        globalSearchInput.val(formatPatient(globalPatientsList[0]) || 0);
         globalConfigForm.submit();
       }
 
@@ -164,8 +183,8 @@
     const sexEl = $("#patient--sex");
     const nameEl = $("#patient--name");
     const ageEl = $("#patient--age");
+    const searchDisplayEl = $("#global-search-display");
 
-    // TODO: fetch real patient data here
     const patient = (
       await axios({
         headers: { "X-CSRFToken": getCookie("csrftoken") },
@@ -180,6 +199,7 @@
     nameEl.text(`${title}. ${fullName}`);
     ageEl.text(age);
     sexEl.text(gender);
+    searchDisplayEl.val(formatPatient({ profile_data: patient }));
 
     const data = {
       patientId: parseInt(patientId, 10),
@@ -194,8 +214,19 @@
     redrawSleepZones(data);
   };
 
-  const populatePatients = (patients) => {
-    globalSearchInput
+  const populatePatients = () => {
+    const dataSource = new Bloodhound({
+      datumTokenizer: (datum) =>
+        Bloodhound.tokenizers.whitespace(
+          datum.profile_data.fullName,
+          datum.profile_data.age
+        ),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      identify: (p) => p.id,
+      local: globalPatientsList,
+    });
+
+    $("#global-search-display")
       .typeahead(
         {
           hint: true,
@@ -204,15 +235,19 @@
         },
         {
           name: "patients",
-          source: substringMatcher(globalPatientIds),
+          display: (p) => formatPatient(p),
+          source: dataSource.ttAdapter(),
+          suggestion: (p) => `<div>${formatPatient(p)}</div>`,
         }
       )
       .bind("typeahead:selected", (event, value) => {
         choosePatient(value);
       });
+
     $(".search-form-group .form-group .twitter-typeahead").css({
       display: "block",
     });
+
     addListeners();
   };
 
@@ -229,15 +264,7 @@
     globalStartDateInput = $("#global-start-date-input");
     globalEndDateInput = $("#global-end-date-input");
 
-    const patientIds = (
-      await axios({
-        headers: { "X-CSRFToken": getCookie("csrftoken") },
-        method: "get",
-        url: "{% url 'patient_ids' %}",
-      })
-    ).data;
-    globalPatientIds = patientIds;
-
-    populatePatients(patientIds.map((id) => ({ id })));
+    globalPatientsList = await getPatients();
+    populatePatients();
   });
 </script>

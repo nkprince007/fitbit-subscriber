@@ -1,11 +1,12 @@
 from datetime import timedelta, datetime
+from fitbit_auth.serializers import FitbitUserSerializer
 from fitbit_data.models import FoodSummary
 from random import randint
 
 from django.shortcuts import get_object_or_404, render
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 
 from fitbit_auth.models import FitbitUser, User
 from fitbit_data.utils import (get_patient_id,
@@ -25,10 +26,20 @@ def get_patient_ids(request):
     return Response(User.objects.values_list('id', flat=True))
 
 
+@api_view(('GET',))
+def get_patients(request):
+    data = FitbitUserSerializer(FitbitUser.objects.all(), many=True).data
+    return Response(data)
+
+
 @api_view(('POST',))
 def get_patient_details(request):
     patient = get_object_or_404(User, id=get_patient_id(request))
-    return Response(patient.fb_auth.client.user_profile_get().get('user'))
+    try:
+        return Response(patient.fb_auth.client.user_profile_get().get('user'))
+    except FitbitUser.DoesNotExist:
+        return Response({'detail': 'Not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(('POST', ))

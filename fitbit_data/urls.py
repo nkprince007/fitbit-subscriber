@@ -8,10 +8,12 @@ from fitbit_data.views import (get_activity_metrics,
                                get_calorie_count,
                                get_patient_details,
                                get_patient_ids,
+                               get_patients,
                                get_sleep_zones)
 
 
 urlpatterns = [
+    path('patients/', get_patients, name='patients'),
     path('patient_ids/', get_patient_ids, name='patient_ids'),
     path('activity_summary/', get_activity_summary, name='activity_summary'),
     path('patient_details/', get_patient_details, name='patient_details'),

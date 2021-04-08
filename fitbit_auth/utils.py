@@ -1,4 +1,5 @@
 from base64 import b64encode
+from fitbit_auth.serializers import FitbitUserSerializer
 from hashlib import sha1
 import hmac
 
