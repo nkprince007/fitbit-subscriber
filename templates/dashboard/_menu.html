@@ -123,10 +123,12 @@
 
       if (!!data["patientId"]) {
         patientId = data["patientId"];
+      } else if (globalPatientsList && globalPatientsList[0]) {
+        globalSearchInput.val(globalPatientsList[0].user || 0);
+        globalConfigForm.submit();
+        return;
       } else {
-        globalSearchInput.val(
-          (globalPatientsList[0] && globalPatientsList[0].id) || 0
-        );
+        globalSearchInput.val(0);
         globalConfigForm.submit();
         return;
       }
