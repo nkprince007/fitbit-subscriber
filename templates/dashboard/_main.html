@@ -25,6 +25,22 @@
   }
 </style>
 
+<script>
+  async function makeRequest(method, url, data) {
+    let options = {
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      method,
+      url,
+    };
+
+    if (data && method !== "get") {
+      options = { ...options, data };
+    }
+
+    return (await axios(options)).data;
+  }
+</script>
+
 <div class="main">
   <div class="left-col">
     <div class="grid-item activity">

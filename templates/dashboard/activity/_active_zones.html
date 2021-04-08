@@ -33,12 +33,10 @@
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    axios({
-      headers: { "X-CSRFToken": getCookie("csrftoken") },
-      method: "post",
-      url: "{% url 'activity_zones' %}",
-      data: { range, patientId },
-    }).then(({ data }) => {
+    makeRequest("post", "{% url 'activity_zones' %}", {
+      range,
+      patientId,
+    }).then((data) => {
       if (data.length <= 0) return;
 
       // List of groups = header of the csv files

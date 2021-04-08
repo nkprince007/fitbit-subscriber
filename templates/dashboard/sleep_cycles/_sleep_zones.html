@@ -2,13 +2,10 @@
 
 <script>
   function redrawSleepZones({ patientId, period }) {
-    axios({
-      headers: { "X-CSRFToken": getCookie("csrftoken") },
-      method: "post",
-      url: "{% url 'sleep_zones' %}",
-      data: { period, patientId },
-    }).then(({ data }) => {
-      // console.log(data);
-    });
+    makeRequest("post", "{% url 'sleep_zones' %}", { period, patientId }).then(
+      (data) => {
+        // console.log(data);
+      }
+    );
   }
 </script>

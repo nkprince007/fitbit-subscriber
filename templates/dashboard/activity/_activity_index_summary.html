@@ -40,12 +40,10 @@
       .attr("transform", `translate(${margin.left}, 0)`);
 
     // Read the data
-    axios({
-      headers: { "X-CSRFToken": getCookie("csrftoken") },
-      method: "post",
-      url: "{% url 'activity_summary' %}",
-      data: { range, patientId },
-    }).then(({ data }) => {
+    makeRequest("post", "{% url 'activity_summary' %}", {
+      range,
+      patientId,
+    }).then((data) => {
       const { summaries } = data;
       const startDate = moment(data.startDate, "DD/MM/YYYY").toDate();
       const endDate = moment(data.endDate, "DD/MM/YYYY").toDate();

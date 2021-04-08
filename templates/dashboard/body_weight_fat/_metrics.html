@@ -76,12 +76,7 @@
       height = activityChartsEl.width() / 3 - margin.top - margin.bottom;
 
     // Read the data
-    axios({
-      headers: { "X-CSRFToken": getCookie("csrftoken") },
-      method: "post",
-      url,
-      data: { patientId, range },
-    }).then(({ data }) => {
+    makeRequest("post", url, { patientId, range }).then((data) => {
       // group the data: I want to draw one line per group
       const sumstat = d3
         .nest() // nest function allows to group the calculation per level of a factor

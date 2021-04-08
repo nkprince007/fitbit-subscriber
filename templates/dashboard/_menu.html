@@ -110,21 +110,7 @@
   let globalEndDateInput;
 
   const getPatients = async () => {
-    return (
-      await axios({
-        headers: { "X-CSRFToken": getCookie("csrftoken") },
-        method: "get",
-        url: "{% url 'patients' %}",
-      })
-    ).data;
-  };
-
-  const substringMatcher = (strings) => {
-    return function findMatches(q, cb) {
-      const substringRegex = new RegExp(q, "i");
-      const matches = strings.filter((str) => substringRegex.test(str));
-      cb(matches);
-    };
+    return makeRequest("get", "{% url 'patients' %}");
   };
 
   const choosePatient = (patient) => {
@@ -185,14 +171,9 @@
     const ageEl = $("#patient--age");
     const searchDisplayEl = $("#global-search-display");
 
-    const patient = (
-      await axios({
-        headers: { "X-CSRFToken": getCookie("csrftoken") },
-        method: "post",
-        data: { patientId },
-        url: "{% url 'patient_details' %}",
-      })
-    ).data;
+    const patient = await makeRequest("post", "{% url 'patient_details' %}", {
+      patientId,
+    });
     const { fullName, age } = patient;
     const gender = patient.gender.toLowerCase();
     const title = gender === "male" ? "Mr" : "Mrs";
