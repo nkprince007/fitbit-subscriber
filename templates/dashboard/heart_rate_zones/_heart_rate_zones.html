@@ -1,0 +1,50 @@
+{% load static %}
+
+<script>
+  function average(arr) {
+    if (arr.length <= 0) return 0;
+    const sum = arr.reduce((acc, curr) => acc + curr, 0);
+    return sum / arr.length;
+  }
+
+  function parseHeartRateSummaries(data) {
+    return data.map((summary) => {
+      const restingHeartRate = average(
+        summary.data.map((hrData) => hrData.value.restingHeartRate)
+      );
+
+      const zones = summary.data
+        .map((d) => d.value.heartRateZones)
+        .flat()
+        .groupBy("name");
+
+      const values = {};
+      for (const [key, value] of Object.entries(zones)) {
+        values[key] = value.reduce(
+          (acc, curr) => {
+            const min = Math.min(acc.min, curr.min);
+            const max = Math.max(acc.max, curr.max);
+            return { ...curr, min, max };
+          },
+          { min: Infinity, max: -Infinity }
+        );
+      }
+
+      return {
+        date: summary.date,
+        values,
+        restingHeartRate,
+      };
+    });
+  }
+
+  function redrawHeartRateZones({ patientId, range }) {
+    makeRequest("post", "{% url 'heart_rate_zones' %}", {
+      range,
+      patientId,
+    }).then((data) => {
+      const results = parseHeartRateSummaries(data);
+      console.log(results);
+    });
+  }
+</script>

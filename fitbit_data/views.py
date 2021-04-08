@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from fitbit_data.serializers import HeartRateSummarySerializer
 from fitbit_auth.serializers import FitbitUserSerializer
 from fitbit_data.models import FoodSummary
 from random import randint
@@ -260,3 +261,16 @@ def get_sleep_zones(request):
         }
         for i in range(period)
     ])
+
+
+@api_view(('POST',))
+def get_heart_rate_zones(request):
+    patient_id = get_patient_id(request)
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+
+    start_date, end_date = get_range(request)
+    heart_rate_logs = fb_user.heart_rate_summary.filter(
+        date__gte=start_date, date__lte=end_date)
+
+    data = HeartRateSummarySerializer(heart_rate_logs, many=True).data
+    return Response(data)

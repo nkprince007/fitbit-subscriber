@@ -6,6 +6,7 @@ from fitbit_data.views import (get_activity_metrics,
                                get_body_weight_metrics,
                                get_body_fat_metrics,
                                get_calorie_count,
+                               get_heart_rate_zones,
                                get_patient_details,
                                get_patient_ids,
                                get_patients,
@@ -24,4 +25,5 @@ urlpatterns = [
          name='body_weight_metrics'),
     path('body_fat_metrics/', get_body_fat_metrics, name='body_fat_metrics'),
     path('sleep_zones/', get_sleep_zones, name='sleep_zones'),
+    path('heart_rate_zones/', get_heart_rate_zones, name='heart_rate_zones'),
 ]

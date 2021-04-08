@@ -39,6 +39,18 @@
 
     return (await axios(options)).data;
   }
+
+  Array.prototype.groupBy = function (property) {
+    return this.reduce((acc, obj) => {
+      const key = obj[property];
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      // Add object to list for given key's value
+      acc[key].push(obj);
+      return acc;
+    }, {});
+  };
 </script>
 
 <div class="main">
@@ -63,6 +75,9 @@
     <div class="dual-section heart-sleep">
       <div class="grid-item">
         <h6 class="section-title">Heart Rate</h6>
+        <div>
+          {% include 'dashboard/heart_rate_zones/_heart_rate_zones.html' %}
+        </div>
       </div>
       <div class="grid-item sleep-cycles">
         <h6 class="section-title">Sleep Cycles</h6>
