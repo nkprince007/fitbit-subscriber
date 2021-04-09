@@ -42,13 +42,7 @@
     {% endfor %}
   {% endif %}
 
-  {% if request.user and not request.user.id %}
-    {% include 'index/_login_form.html' %}
-  {% else %}
-  <div class="custom-button" id="dashboard-btn">
-    <a href="{% url 'home' %}"> Go to Dashboard </a>
-  </div>
-  {% endif %}
+  {% include 'index/_login_form.html' %}
 </div>
 
 {% endblock %}
