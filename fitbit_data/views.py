@@ -1,7 +1,4 @@
-from datetime import timedelta, datetime
-from random import randint
-
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -15,7 +12,8 @@ from fitbit_data.utils import (get_patient_id,
                                get_range,
                                get_week_end_date,
                                get_week_start_date)
-from fitbit_data.serializers import HeartRateSummarySerializer
+from fitbit_data.serializers import (HeartRateSummarySerializer,
+                                     SleepSummarySerializer)
 
 
 @user_passes_test(lambda user: user.is_superuser)
@@ -252,17 +250,15 @@ def get_body_weight_metrics(request):
 
 @api_view(('POST',))
 def get_sleep_zones(request):
-    period = get_period(request)
-    return Response([
-        {
-            'date': format_date(datetime.today() - timedelta(i)),
-            'asleep': randint(0, 100),
-            'awake': randint(0, 100),
-            'restless': randint(0, 100),
-            'efficiency': randint(0, 100),
-        }
-        for i in range(period)
-    ])
+    patient_id = get_patient_id(request)
+    fb_user = get_object_or_404(FitbitUser, user_id=patient_id)
+
+    start_date, end_date = get_range(request)
+    sleep_logs = fb_user.sleep_summary.filter(
+        date__gte=start_date, date__lte=end_date)
+
+    data = SleepSummarySerializer(sleep_logs, many=True).data
+    return Response(data)
 
 
 @api_view(('POST',))
