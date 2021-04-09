@@ -11,6 +11,6 @@ urlpatterns = [
     re_path(r'users/(?P<id>\w+)/', get_profile, name='get-user-profile'),
     path('login/', auth_login, name='login'),
     path('logout/', auth_logout, name='logout'),
-    path('fitbit-login/', auth_initialize, name='login-fitbit'),
+    path('fitbit-login/', auth_initialize, name='add-new-patient'),
     path('complete/', auth_complete, name='login-fitbit-complete'),
 ]

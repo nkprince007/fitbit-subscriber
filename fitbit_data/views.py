@@ -18,11 +18,7 @@ from fitbit_data.utils import (get_patient_id,
 from fitbit_data.serializers import HeartRateSummarySerializer
 
 
-def is_superuser(user):
-    return user.is_superuser
-
-
-@user_passes_test(is_superuser)
+@user_passes_test(lambda user: user.is_superuser)
 def dashboard(request):
     return render(request, 'dashboard.html')
 

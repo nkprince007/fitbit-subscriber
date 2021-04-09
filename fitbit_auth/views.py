@@ -2,7 +2,9 @@ from base64 import b64encode
 from urllib.parse import urljoin
 import traceback
 
+
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib import messages
 from django.contrib.messages.api import get_messages
@@ -16,6 +18,7 @@ import requests
 from fitbit_auth.models import FitbitUser
 from fitbit_auth.utils import create_user_profile, verified_signature_required
 from fitbit_data.tasks import process_notification
+from fitbit_data.views import dashboard
 
 
 User = get_user_model()
@@ -37,6 +40,9 @@ FITBIT_SCOPES = [
 
 
 def index(request):
+    if request.user and request.user.is_authenticated and request.user.is_superuser:
+        return redirect(dashboard)
+
     return render(request,
                   'index.html',
                   context={'messages': get_messages(request)})
@@ -70,6 +76,7 @@ def auth_logout(request):
     return redirect(index)
 
 
+@user_passes_test(lambda user: user.is_superuser)
 def auth_initialize(request):
     params = {
         'response_type': 'code',
@@ -105,7 +112,7 @@ def auth_complete(request):
     except (HTTPUnauthorized, requests.exceptions.HTTPError, TypeError) as error:
         tb = traceback.format_exc()
         return Response({'error': tb}, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'profile': profile}, status=status.HTTP_200_OK)
+    return redirect(dashboard)
 
 
 @api_view(['GET', 'POST'])
