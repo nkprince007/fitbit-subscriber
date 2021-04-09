@@ -92,11 +92,19 @@
   }
 
   function drawRestingHeartRates(results, dates, options) {
-    const { width, margin, x, y } = options;
+    const { width, margin, x, y, range } = options;
+    if (range.period > 14) {
+      return;
+    }
+
     const resultDates = results.map((r) =>
       moment(r.date, "YYYY-MM-DD").toDate().getTime()
     );
 
+    const AVG_RESTING_HEART_RATE = 68; // Reference: US averages from https://www.fitbit.com/global/us/activity-index
+    const MAX_RESTING_HEART_RATE = 100; // Reference: https://en.wikipedia.org/wiki/Heart_rate#Resting_heart_rate
+    const MIN_RESTING_HEART_RATE = 60; // Reference: https://en.wikipedia.org/wiki/Heart_rate#Resting_heart_rate
+    const colorScale = d3.interpolateHsl('orange', 'red');
     const restingHeartRates = dates.map((date) => {
       if (resultDates.includes(date.getTime())) {
         const result = results.find(
@@ -104,9 +112,16 @@
             moment(result.date, "YYYY-MM-DD").toDate().getTime() ===
             date.getTime()
         );
-        return { date, value: result.restingHeartRate || "-" };
+
+        const ratio = Math.abs(result.restingHeartRate - AVG_RESTING_HEART_RATE) / (MAX_RESTING_HEART_RATE-MIN_RESTING_HEART_RATE);
+        const color = colorScale(ratio + 0.2); // 0.2 accounts for deviation
+        return {
+          date,
+          color: Number.isNaN(ratio) ? 'gray' : color,
+          value: result.restingHeartRate || "-"
+        };
       }
-      return { date, value: "-" };
+      return { date, value: "-", color: 'gray' };
     });
 
     const heartRatesSvg = d3
@@ -126,9 +141,11 @@
       .style("line-height", "2ch")
       .style("font-size", "0.8rem")
       .style("font-weight", "bold")
-      .style("width", "10ch")
+      .style("width", "7ch")
       .style("text-align", "center")
-      .text("Resting Heart Rate (bpm)");
+      .style("padding-left", "4px")
+      .style("white-space", "pre")
+      .text("Resting\nHeart\nRate");
 
     heartRatesSvg
       .selectAll(".rate")
@@ -142,6 +159,7 @@
       .attr("transform", `translate(${x.bandwidth() / 2})`)
       .attr("dominant-baseline", "middle")
       .attr("text-anchor", "middle")
+      .attr("fill", d => d.color)
       .text((d) => d.value);
   }
 
@@ -240,7 +258,7 @@
       };
 
       zoneTypes.forEach((zoneType, i) => drawHeartRates(zoneType, i));
-      drawRestingHeartRates(results, dates, { width, height, x, y, margin });
+      drawRestingHeartRates(results, dates, { range, width, height, x, y, margin });
     });
   }
 </script>
