@@ -1,10 +1,10 @@
 {% load static %}
 
 <script>
-  function redrawSleepZones({ patientId, period }) {
-    makeRequest("post", "{% url 'sleep_zones' %}", { period, patientId }).then(
+  function redrawSleepZones({ patientId, range }) {
+    makeRequest("post", "{% url 'sleep_zones' %}", { range, patientId }).then(
       (data) => {
-        // console.log(data);
+        console.log(data);
       }
     );
   }
