@@ -169,6 +169,7 @@
     nameEl.text(`${title}. ${fullName}`);
     ageEl.text(age);
     sexEl.text(gender);
+    globalSearchInput.val(patient.user);
 
     const data = {
       patientId: parseInt(patientId, 10),

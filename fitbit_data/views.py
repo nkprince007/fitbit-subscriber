@@ -38,7 +38,7 @@ def get_patients(request):
 def get_patient_details(request):
     patient = get_object_or_404(User, id=get_patient_id(request))
     try:
-        return Response(patient.fb_auth.profile_data)
+        return Response({**patient.fb_auth.profile_data, 'user': patient.id})
     except FitbitUser.DoesNotExist:
         return Response({'detail': 'Not found.'},
                         status=status.HTTP_404_NOT_FOUND)
