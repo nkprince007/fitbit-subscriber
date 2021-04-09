@@ -1,23 +1,28 @@
 from datetime import timedelta, datetime
-from fitbit_data.serializers import HeartRateSummarySerializer
-from fitbit_auth.serializers import FitbitUserSerializer
-from fitbit_data.models import FoodSummary
 from random import randint
 
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
 from fitbit_auth.models import FitbitUser, User
+from fitbit_auth.serializers import FitbitUserSerializer
 from fitbit_data.utils import (get_patient_id,
                                get_period,
                                format_date,
                                get_range,
                                get_week_end_date,
                                get_week_start_date)
+from fitbit_data.serializers import HeartRateSummarySerializer
 
 
+def is_superuser(user):
+    return user.is_superuser
+
+
+@user_passes_test(is_superuser)
 def dashboard(request):
     return render(request, 'dashboard.html')
 

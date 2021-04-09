@@ -3,7 +3,9 @@ from urllib.parse import urljoin
 import traceback
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib import messages
+from django.contrib.messages.api import get_messages
 from django.shortcuts import get_object_or_404, redirect, render
 from fitbit.exceptions import HTTPUnauthorized
 from rest_framework import status
@@ -35,7 +37,9 @@ FITBIT_SCOPES = [
 
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request,
+                  'index.html',
+                  context={'messages': get_messages(request)})
 
 
 @api_view(('GET',))
@@ -47,6 +51,23 @@ def get_profile(request, **kwargs):
     except FitbitUser.DoesNotExist:
         return Response({'detail': 'Not found.'},
                         status=status.HTTP_404_NOT_FOUND)
+
+
+def auth_login(request):
+    email = request.POST.get('email')
+    password = request.POST.get('password')
+    user = authenticate(request, email=email, password=password)
+    if user is not None:
+        login(request, user)
+        return redirect('home')
+    messages.warning(
+        request, 'Unable to login with given credentials. Please try again.')
+    return redirect(index)
+
+
+def auth_logout(request):
+    logout(request)
+    return redirect(index)
 
 
 def auth_initialize(request):

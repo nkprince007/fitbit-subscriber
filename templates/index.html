@@ -1,4 +1,6 @@
-{% extends "common/_base.html" %} {% block content %}
+{% extends "common/_base.html" %}
+
+{% block content %}
 <style>
   .custom-button {
     text-align: center;
@@ -34,10 +36,14 @@
 </style>
 
 <div class="login-form">
+  {% if messages %}
+    {% for message in messages %}
+      <div role="alert" {% if message.tags %} class="{{ message.tags }} alert alert-danger"{% endif %}>{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
   {% if request.user and not request.user.id %}
-  <div class="custom-button">
-    <a href="{% url 'login' %}"> Login with Fitbit </a>
-  </div>
+    {% include 'index/_login_form.html' %}
   {% else %}
   <div class="custom-button" id="dashboard-btn">
     <a href="{% url 'home' %}"> Go to Dashboard </a>
