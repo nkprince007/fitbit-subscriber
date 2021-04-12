@@ -212,7 +212,7 @@ FITBIT_CLIENT_SECRET = os.environ.get('FITBIT_CLIENT_SECRET',
                                       '393ccc92f9217f7fe17a0f6f56a48b44')
 FITBIT_SUBSCRIBER_VERIFICATION_CODE = os.environ.get(
     'FITBIT_SUBSCRIBER_VERIFICATION_CODE',
-    'fdaaebbd1ac8697d7aa750011c7c6a07e88ca14ea2950588c2bbcb0fbb22137d')
+    '6d46c54492886ffd1f6605872bd64bb1ba953792339d4aa7bde6687765ffadf1')
 
 
 # Redis in-memory database
