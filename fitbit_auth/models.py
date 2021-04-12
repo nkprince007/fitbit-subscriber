@@ -22,6 +22,11 @@ class FitbitUser(models.Model):
     scope = models.TextField()
     expires_at = models.DateTimeField(default=timezone.now)
 
+    def refresh_profile(self):
+        profile = self.client.user_profile_get(self.user.username).get('user')
+        self.profile_data = profile
+        self.save()
+
     @cached_property_with_ttl(ttl=5 * 60)  # cache invalidates after 5 minutes
     def basal_metabolic_rate(self) -> Optional[float]:
         profile = self.profile_data

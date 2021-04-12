@@ -51,9 +51,7 @@ def create_user_profile(credentials: dict):
     }
     fitbit_user, created = FitbitUser.objects.update_or_create(
         user=user, defaults=data)
-    profile = fitbit_user.client.user_profile_get(user_id).get('user')
-    fitbit_user.profile_data = profile
-    fitbit_user.save()
+    fitbit_user.refresh_profile()
     if created:
         add_subscription(fitbit_user)
     return fitbit_user

@@ -26,6 +26,7 @@ class CollectionType(str, Enum):
     body = 'body'
     foods = 'foods'
     sleep = 'sleep'
+    profile = 'profile'
 
 
 @celery.task
@@ -34,7 +35,8 @@ def add(first, second):
 
 
 @celery.task
-def process_additional_data(fb_user: FitbitUser, date: str = 'today'):
+def process_additional_data(fb_user_id: int, date: str = 'today'):
+    fb_user = FitbitUser.objects.get(id=fb_user_id)
     api_client = fb_user.client
     data = api_client.time_series(
         'activities/heart',
@@ -72,7 +74,7 @@ def process_notification(notification):
         activity_data = api_client.get_activity_summary(user_id, date)
         ActivitySummary.objects.update_or_create(
             **common_kwargs, defaults={'data': activity_data})
-        process_additional_data.delay(fb_user, date)
+        process_additional_data.delay(fb_user.id, date)
 
     elif collection_type == CollectionType.foods:
         food_data = api_client.get_food_summary(user_id, date)
@@ -94,5 +96,9 @@ def process_notification(notification):
         body_weight_data = api_client.get_body_weight_logs(user_id, date)
         BodyWeightLog.objects.update_or_create(
             **common_kwargs, defaults={'data': body_weight_data})
+
+    elif collection_type == CollectionType.profile:
+        fb_user.refresh_profile()
+
     else:
         LOGGER.warning('Collection type: %s not implemented for storage!')
