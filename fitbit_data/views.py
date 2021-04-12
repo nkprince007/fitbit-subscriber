@@ -192,13 +192,17 @@ def get_body_fat_metrics(request):
 
     response_data = []
     for log in fat_logs:
+        if log.fat is None:
+            continue
+
         response_data.append({
             'value': log.fat,
             'metric_type': log.source,
             'date': format_date(log.date),
             'metric': 'Body Fat (%)'
         })
-    if len(fat_logs) == 0:
+
+    if len(response_data) == 0:
         response_data = [{
             'value': 0,
             'metric_type': 'dummy',

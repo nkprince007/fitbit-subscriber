@@ -37,7 +37,6 @@ class FitbitUser(models.Model):
     @property
     def client(self) -> CustomFitbit:
         def update_token(token):
-            print(update_token)
             self.access_token = token.get('access_token')
             self.refresh_token = token.get('refresh_token')
             self.expires_at = timezone.now() + (
