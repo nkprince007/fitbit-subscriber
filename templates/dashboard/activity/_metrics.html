@@ -15,6 +15,7 @@
 <script>
   function redrawActivityMetrics({ range, patientId }) {
     const activityChartsEl = $("#activity-charts");
+    const optimals = {};
 
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 10, bottom: 30, left: 35 },
@@ -29,15 +30,11 @@
       // group the data: I want to draw one line per group
       const sumstat = d3
         .nest() // nest function allows to group the calculation per level of a factor
-        .key(function (d) {
-          return d.metric;
-        })
+        .key((d) => d.metric)
         .entries(data);
 
       // What is the list of groups?
-      allKeys = sumstat.map(function (d) {
-        return d.key;
-      });
+      allKeys = sumstat.map((d) => d.key);
 
       // Add an svg element for each group. The will be one beside each other and will go on the next row when no more room available
       const svg = d3
@@ -71,13 +68,35 @@
       //Add Y axis
       const yAxes = {};
       svg.append("g").each(function (s) {
+        if (!s.values.length > 0) return;
         const svg1 = d3.select(this);
-        const y = d3
-          .scaleLinear()
-          .domain(d3.extent(s.values.map((s) => +s.value)))
-          .range([height, 0]);
+        let domain = d3.extent(s.values.map((s) => +s.value));
+        let optimal = s.values[0]["optimal"];
+        if (optimal !== undefined && optimal !== null) {
+          if (typeof optimal === "object") {
+            domain = [
+              Math.min(optimal.min, domain[0]),
+              Math.max(optimal.max, domain[1]),
+            ];
+          } else if (
+            typeof optimal === "number" ||
+            typeof optimal === "string"
+          ) {
+            optimal = parseFloat(optimal, 10);
+            domain = [
+              Math.min(optimal, domain[0]),
+              Math.max(optimal, domain[1]),
+            ];
+          }
+          optimals[s.key] = optimal;
+        }
+        const y = d3.scaleLinear().domain(domain).range([height, 0]);
         yAxes[s.key] = y;
-        svg1.call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")));
+        if (s.key === "Active Duration (min)") {
+          svg1.call(d3.axisLeft(y).ticks(5));
+        } else {
+          svg1.call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")));
+        }
       });
 
       // color palette
@@ -120,6 +139,51 @@
         .attr("y", -10)
         .attr("x", width / 2)
         .text((d) => d.key);
+
+      // Draw the line
+      svg
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1)
+        .each(function (s) {
+          const { key } = s;
+          if (!key || !optimals[key]) return;
+          const optimal = optimals[key];
+          const isRange = typeof optimal === "object";
+          const lines = isRange ? [optimal.min, optimal.max] : [optimal];
+          const y = yAxes[key];
+
+          const path = d3.select(this);
+          if (!isRange) {
+            const values = [
+              { date: range.start, value: optimal },
+              { date: range.end, value: optimal },
+            ];
+            const line = d3
+              .line()
+              .x((d) => x(d.date))
+              .y((d) => y(+d.value))(values);
+
+            path.attr("d", line);
+          } else {
+            const values = [
+              { date: range.start, value: optimal },
+              { date: range.end, value: optimal },
+            ];
+            const area = d3
+              .area()
+              .x((d) => x(d.date))
+              .y0((d) => y(+d.value.min))
+              .y1((d) => y(+d.value.max))(values);
+
+            path
+              .attr("d", area)
+              .attr("stroke-width", 0)
+              .attr("fill", "steelblue")
+              .attr("fill-opacity", 0.5);
+          }
+        });
     });
   }
 </script>

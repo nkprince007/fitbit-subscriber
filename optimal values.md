@@ -37,3 +37,14 @@ Women: 10 x weight (kg) + 6.25 x height (cm) – 5 x age (y) – 161
 | Very Active        | 1.9             |
 
 - Avg. Calorie Intake Required = **Basal Metabolic Rate** (BMR) \* **Activity Factor** (AF)
+
+## Optimal values shown
+
+- [x] Average Step Count
+- [x] Average no. of flights Climbed
+- [x] Average distance travelled
+- [x] Average Active Duration
+- [x] Average Calorie Intake required
+- [x] Average Resting Heart Rate
+- [x] Average Body Mass Index
+- [ ] Average time spent sleeping

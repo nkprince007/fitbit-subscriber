@@ -124,9 +124,15 @@
       svg.append("g").each(function (s) {
         const svg1 = d3.select(this);
         const values = s.values.map((s) => +s.value);
+        let domain = d3.extent(s.values.map((s) => +s.value));
+        let optimal = s.values[0]["optimal"];
+        if (optimal !== null && optimal !== undefined) {
+          optimal = parseInt(optimal, 10);
+          domain = [Math.min(optimal, domain[0]), Math.max(optimal, domain[1])];
+        }
         const y = d3
           .scaleLinear()
-          .domain([Math.floor(d3.min(values)), Math.ceil(d3.max(values))])
+          .domain([Math.floor(domain[0]), Math.ceil(domain[1])])
           .range([height, 0]);
         yAxes[s.key] = y;
         svg1.call(d3.axisLeft(y).ticks(5));
@@ -163,6 +169,32 @@
               .x((d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
               .y((d) => y(+d.value))(d.values)
           );
+        });
+
+      // Draw optimal line
+      svg
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1)
+        .each(function (s) {
+          if (s.values.length <= 0) return;
+
+          const path = d3.select(this);
+          const y = yAxes[s.key];
+          const optimal = s.values[0].optimal;
+          if (optimal === undefined || optimal === null) return;
+
+          const values = [
+            { date: range.start, value: optimal },
+            { date: range.end, value: optimal },
+          ];
+          const line = d3
+            .line()
+            .x((d) => x(d.date))
+            .y((d) => y(+d.value))(values);
+
+          path.attr("d", line);
         });
 
       svg

@@ -121,21 +121,27 @@ def get_activity_metrics(request):
             'date': format_date(summary.date),
             'metric': 'Step Count',
             'value': summary.steps,
+            'optimal': 8170  # Check 'optimal values.md'
         })
         metrics.append({
             'date': format_date(summary.date),
             'metric': 'Flights climbed',
             'value': summary.flights_climbed,
+            'optimal': {'min': 2, 'max': 4}  # Check 'optimal values.md'
         })
         metrics.append({
             'date': format_date(summary.date),
             'metric': 'Distance travelled (m)',
-            'value': summary.distance_travelled * 1000  # km to m,
+            'value': summary.distance_travelled * 1000,  # km to m
+            # Check 'optimal values.md'
+            'optimal': {'min': 1.5 * 1609.34, 'max': 3 * 1609.34}
         })
         metrics.append({
             'date': format_date(summary.date),
-            'metric': 'Active Duration (hrs)',
-            'value': summary.active_duration / 60  # min to hrs,
+            'metric': 'Active Duration (min)',
+            'value': summary.active_duration,  # min
+            # Check 'optimal values.md'
+            'optimal': 27
         })
 
     if len(metrics) == 0:
@@ -228,7 +234,8 @@ def get_body_weight_metrics(request):
             'value': log.bmi,
             'metric_type': log.source,
             'date': format_date(log.date),
-            'metric': 'Body Mass Index (BMI)'
+            'metric': 'Body Mass Index (BMI)',
+            'optimal': 28.1,  # check 'optimal values.md'
         })
         response_data.append({
             'value': log.weight,
