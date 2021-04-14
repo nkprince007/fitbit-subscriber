@@ -17,7 +17,7 @@
     const activityChartsEl = $("#activity-charts");
 
     // set the dimensions and margins of the graph
-    const margin = { top: 30, right: 10, bottom: 30, left: 30 },
+    const margin = { top: 30, right: 10, bottom: 30, left: 35 },
       width = activityChartsEl.width() / 2 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
@@ -77,7 +77,7 @@
           .domain(d3.extent(s.values.map((s) => +s.value)))
           .range([height, 0]);
         yAxes[s.key] = y;
-        svg1.call(d3.axisLeft(y).ticks(5));
+        svg1.call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("d")));
       });
 
       // color palette

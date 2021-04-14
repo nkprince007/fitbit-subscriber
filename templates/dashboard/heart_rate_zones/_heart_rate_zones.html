@@ -46,12 +46,6 @@
 </style>
 
 <script>
-  function average(arr) {
-    if (arr.length <= 0) return 0;
-    const sum = arr.reduce((acc, curr) => acc + curr, 0);
-    return sum / arr.length;
-  }
-
   function parseHeartRateSummaries(data) {
     let globalMin = Infinity;
     let globalMax = -Infinity;
@@ -104,7 +98,7 @@
     const AVG_RESTING_HEART_RATE = 68; // Reference: US averages from https://www.fitbit.com/global/us/activity-index
     const MAX_RESTING_HEART_RATE = 100; // Reference: https://en.wikipedia.org/wiki/Heart_rate#Resting_heart_rate
     const MIN_RESTING_HEART_RATE = 60; // Reference: https://en.wikipedia.org/wiki/Heart_rate#Resting_heart_rate
-    const colorScale = d3.interpolateHsl('orange', 'red');
+    const colorScale = d3.interpolateHsl("orange", "red");
     const restingHeartRates = dates.map((date) => {
       if (resultDates.includes(date.getTime())) {
         const result = results.find(
@@ -113,15 +107,17 @@
             date.getTime()
         );
 
-        const ratio = Math.abs(result.restingHeartRate - AVG_RESTING_HEART_RATE) / (MAX_RESTING_HEART_RATE-MIN_RESTING_HEART_RATE);
+        const ratio =
+          Math.abs(result.restingHeartRate - AVG_RESTING_HEART_RATE) /
+          (MAX_RESTING_HEART_RATE - MIN_RESTING_HEART_RATE);
         const color = colorScale(ratio + 0.2); // 0.2 accounts for deviation
         return {
           date,
-          color: Number.isNaN(ratio) ? 'gray' : color,
-          value: result.restingHeartRate || "-"
+          color: Number.isNaN(ratio) ? "gray" : color,
+          value: result.restingHeartRate || "-",
         };
       }
-      return { date, value: "-", color: 'gray' };
+      return { date, value: "-", color: "gray" };
     });
 
     const heartRatesSvg = d3
@@ -159,7 +155,7 @@
       .attr("transform", `translate(${x.bandwidth() / 2})`)
       .attr("dominant-baseline", "middle")
       .attr("text-anchor", "middle")
-      .attr("fill", d => d.color)
+      .attr("fill", (d) => d.color)
       .text((d) => d.value);
   }
 
@@ -258,7 +254,14 @@
       };
 
       zoneTypes.forEach((zoneType, i) => drawHeartRates(zoneType, i));
-      drawRestingHeartRates(results, dates, { range, width, height, x, y, margin });
+      drawRestingHeartRates(results, dates, {
+        range,
+        width,
+        height,
+        x,
+        y,
+        margin,
+      });
     });
   }
 </script>

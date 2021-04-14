@@ -40,6 +40,15 @@
     return (await axios(options)).data;
   }
 
+  function hyphenCase(str) {
+    return str.replace(/\s+/g, "-").toLowerCase();
+  }
+
+  function normalCase(str) {
+    const result = str.replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1);
+  }
+
   Array.prototype.groupBy = function (property) {
     return this.reduce((acc, obj) => {
       const key = obj[property];
@@ -51,6 +60,45 @@
       return acc;
     }, {});
   };
+
+  Array.prototype.sum = function () {
+    return this.reduce((acc, val) => acc + val, 0);
+  };
+
+  function weightedAverage(weights, items) {
+    if (weights.length !== items.length) return 0;
+    if (weights.length === 0) return 0;
+
+    const num = weights.map((w, idx) => w * items[idx]).sum();
+    const denum = weights.sum();
+    return num / denum;
+  }
+
+  function average(arr) {
+    return weightedAverage(
+      Array.from({ length: arr.length }, () => 1),
+      arr
+    );
+  }
+
+  function getDatesInRange(start, end) {
+    const dates = [];
+    const startDate = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate()
+    );
+    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    for (
+      let dt = new Date(startDate);
+      dt <= end;
+      dt.setDate(dt.getDate() + 1)
+    ) {
+      dates.push(new Date(dt));
+    }
+    return dates;
+  }
 </script>
 
 <div class="main">
@@ -80,7 +128,7 @@
         </div>
       </div>
       <div class="grid-item sleep-cycles">
-        <h6 class="section-title">Sleep Cycles</h6>
+        <h6 class="section-title" style="margin: 0">Sleep Cycles</h6>
         <div>{% include 'dashboard/sleep_cycles/_sleep_zones.html' %}</div>
       </div>
     </div>

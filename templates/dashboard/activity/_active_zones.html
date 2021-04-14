@@ -11,10 +11,6 @@
 </div>
 
 <script>
-  function keyize(str) {
-    return str.replace(/\s+/g, "-").toLowerCase();
-  }
-
   function redrawActivityZones({ range, patientId }) {
     const activityZonesEl = $("#activity-zones");
 
@@ -131,12 +127,8 @@
         .data(stackedData)
         .enter()
         .append("path")
-        .attr("class", function (d) {
-          return "myArea " + keyize(d.key);
-        })
-        .style("fill", function (d) {
-          return color(d.key);
-        })
+        .attr("class", (d) => "myArea " + hyphenCase(d.key))
+        .style("fill", (d) => color(d.key))
         .attr("d", area);
 
       // Add the brushing
@@ -174,7 +166,7 @@
         // reduce opacity of all groups
         d3.selectAll(".myArea").style("opacity", 0.1);
         // expect the one that is hovered
-        d3.select("." + keyize(d)).style("opacity", 1);
+        d3.select("." + hyphenCase(d)).style("opacity", 1);
       };
 
       // And when it is not hovered anymore

@@ -1,33 +1,20 @@
 {% load static %}
 <div id="nutrition-bar-plot"></div>
 
-<script>
-  function getDatesInRange(start, end) {
-    const dates = [];
-    const startDate = new Date(
-      start.getFullYear(),
-      start.getMonth(),
-      start.getDate()
-    );
-    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-
-    for (
-      let dt = new Date(startDate);
-      dt <= end;
-      dt.setDate(dt.getDate() + 1)
-    ) {
-      dates.push(new Date(dt));
-    }
-    return dates;
+<style>
+  #nutrition-bar-plot .y-axis .tick:nth-child(2n) {
+    visibility: hidden;
   }
+</style>
 
+<script>
   function redrawNutritionBarPlots({ range, patientId }) {
     const barPlotEl = $("#nutrition-bar-plot");
 
     // set the dimensions and margins of the graph
     const margin = { top: 20, right: 30, bottom: 20, left: 50 },
       width = barPlotEl.width() - margin.left - margin.right,
-      height = 200 - margin.top - margin.bottom;
+      height = 160 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     const svg = d3
@@ -82,7 +69,10 @@
 
         // Add Y axis
         const y = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
-        svg.append("g").call(d3.axisLeft(y));
+        svg
+          .append("g")
+          .attr("class", "y-axis")
+          .call(d3.axisLeft(y).tickFormat(d3.format("d")));
 
         // color palette = one color per subgroup
         const color = d3
