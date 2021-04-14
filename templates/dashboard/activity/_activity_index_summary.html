@@ -7,12 +7,53 @@
     </a>
   </p>
   <div id="activity-heatmap"></div>
+  <div id="activity-heatmap-legend">
+    <div class="color-container"></div>
+    <div class="range">
+      <span>Low</span>
+      <span>High</span>
+    </div>
+  </div>
 </div>
+
+<style>
+  #activity-heatmap-legend .color-container {
+    height: 16px;
+    box-sizing: content-box;
+    width: calc(100% - 4em - 2px);
+    margin: 1em 2em 0em 2em;
+    border: 1px solid black;
+    display: flex;
+  }
+
+  #activity-heatmap-legend .range {
+    display: flex;
+    padding: 0 1em;
+    justify-content: space-between;
+  }
+</style>
 
 <script>
   function getWeekStart(dataItem) {
     const { start } = dataItem.weekRange;
     return moment(start, "DD/MM/YYYY").toDate();
+  }
+
+  function buildPALLegend() {
+    const colorContainer = d3.select(
+      "#activity-heatmap-legend .color-container"
+    );
+    const boxCount = 9;
+    const height = colorContainer.style("height");
+    const { width } = colorContainer.node().getBoundingClientRect();
+    d3.schemeGreens[boxCount].forEach((color) => {
+      colorContainer
+        .append("div")
+        .attr("class", "zone")
+        .style("width", `${width / boxCount}px`)
+        .style("height", height)
+        .style("background-color", color);
+    });
   }
 
   function redrawActivityHeatmap({ range, patientId }) {
@@ -56,6 +97,8 @@
         weeks.push(currDate);
         currDate = new Date(currDate.getTime() + 7 * 1000 * 60 * 60 * 24);
       }
+
+      buildPALLegend();
 
       // Build X scale:
       const x = d3.scaleBand().range([0, width]).domain(weeks).padding(0);

@@ -228,7 +228,7 @@
           .style("fill", function (d) {
             return color(d);
           })
-          .text((d) => normalCase(d))
+          .text((d) => camelCaseToNormalCase(d))
           .attr("text-anchor", "left")
           .style("cursor", "pointer")
           .style("alignment-baseline", "middle")

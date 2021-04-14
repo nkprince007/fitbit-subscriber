@@ -1,7 +1,35 @@
 {% load static %}
+<div id="nutrition-legend"></div>
 <div id="nutrition-bar-plot"></div>
 
 <style>
+  #nutrition-legend {
+    position: absolute;
+    top: 0.5em;
+    right: 1em;
+  }
+
+  #nutrition-legend .zone {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 12px;
+  }
+
+  #nutrition-legend .zone .square {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    border-radius: 1000vw;
+  }
+
+  #nutrition-legend .zone .text {
+    display: inline-block;
+    margin: 0;
+    margin-left: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
   #nutrition-bar-plot .y-axis .tick:nth-child(2n) {
     visibility: hidden;
   }
@@ -10,6 +38,7 @@
 <script>
   function redrawNutritionBarPlots({ range, patientId }) {
     const barPlotEl = $("#nutrition-bar-plot");
+    const legendEl = d3.select("#nutrition-legend");
 
     // set the dimensions and margins of the graph
     const margin = { top: 20, right: 30, bottom: 20, left: 50 },
@@ -30,6 +59,24 @@
       (data) => {
         const subgroups = ["current_value", "optimal_value"];
         const groups = getDatesInRange(range.start, range.end);
+
+        // color palette = one color per subgroup
+        const color = d3
+          .scaleOrdinal()
+          .domain(subgroups)
+          .range(d3.schemeCategory20);
+
+        subgroups.forEach((group) => {
+          const zone = legendEl.append("div").attr("class", "zone");
+          zone
+            .append("div")
+            .attr("class", "square")
+            .style("background-color", color(group));
+          zone
+            .append("p")
+            .attr("class", "text")
+            .text(snakeCaseToNormalCase(group));
+        });
 
         // Add X axis
         const x = d3
@@ -73,12 +120,6 @@
           .append("g")
           .attr("class", "y-axis")
           .call(d3.axisLeft(y).tickFormat(d3.format("d")));
-
-        // color palette = one color per subgroup
-        const color = d3
-          .scaleOrdinal()
-          .domain(subgroups)
-          .range(d3.schemeCategory20);
 
         svg
           .append("text")
