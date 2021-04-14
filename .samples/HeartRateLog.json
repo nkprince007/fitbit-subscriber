@@ -1,0 +1,38 @@
+[
+  {
+    "value": {
+      "heartRateZones": [
+        {
+          "max": 116,
+          "min": 30,
+          "name": "Out of Range",
+          "minutes": 1440,
+          "caloriesOut": 1796.544
+        },
+        {
+          "max": 143,
+          "min": 116,
+          "name": "Fat Burn",
+          "minutes": 0,
+          "caloriesOut": 0
+        },
+        {
+          "max": 176,
+          "min": 143,
+          "name": "Cardio",
+          "minutes": 0,
+          "caloriesOut": 0
+        },
+        {
+          "max": 220,
+          "min": 176,
+          "name": "Peak",
+          "minutes": 0,
+          "caloriesOut": 0
+        }
+      ],
+      "customHeartRateZones": []
+    },
+    "dateTime": "2021-02-16"
+  }
+]
