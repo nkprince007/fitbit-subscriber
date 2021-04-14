@@ -50,7 +50,9 @@
       // Add X axis
       var x = d3
         .scaleTime()
-        .domain(d3.extent(data, (d) => moment(d.date, "DD/MM/YYYY").toDate()))
+        .domain(
+          d3.extent(data, (d) => moment.utc(d.date, "DD/MM/YYYY").toDate())
+        )
         .range([0, width]);
       var xAxis = svg
         .append("g")
@@ -117,7 +119,7 @@
       // Area generator
       var area = d3
         .area()
-        .x(({ data }) => x(moment(data.date, "DD/MM/YYYY").toDate()))
+        .x(({ data }) => x(moment.utc(data.date, "DD/MM/YYYY").toDate()))
         .y0((d) => y(d[0]))
         .y1((d) => y(d[1]));
 

@@ -25,7 +25,7 @@
       const awakeMinutes = sleep.map((s) => s.minutesAwake).sum();
       const restlessMinutes = sleep.map((s) => s.restlessDuration).sum();
       return {
-        date: moment(date, "YYYY-MM-DD").toDate(),
+        date: moment.utc(date, "YYYY-MM-DD").toDate(),
         efficiency,
         asleepMinutes: summary.totalMinutesAsleep,
         awakeMinutes,

@@ -92,7 +92,7 @@
     }
 
     const resultDates = results.map((r) =>
-      moment(r.date, "YYYY-MM-DD").toDate().getTime()
+      moment.utc(r.date, "YYYY-MM-DD").toDate().getTime()
     );
 
     const AVG_RESTING_HEART_RATE = 68; // Reference: US averages from https://www.fitbit.com/global/us/activity-index
@@ -103,7 +103,7 @@
       if (resultDates.includes(date.getTime())) {
         const result = results.find(
           (result) =>
-            moment(result.date, "YYYY-MM-DD").toDate().getTime() ===
+            moment.utc(result.date, "YYYY-MM-DD").toDate().getTime() ===
             date.getTime()
         );
 
@@ -247,7 +247,7 @@
           .append("rect")
           .attr("class", "bar")
           .attr("fill", colors[zoneIndex])
-          .attr("x", (d) => x(moment(d.date, "YYYY-MM-DD").toDate()))
+          .attr("x", (d) => x(moment.utc(d.date, "YYYY-MM-DD").toDate()))
           .attr("width", x.bandwidth())
           .attr("y", (d) => y(d.values[zoneType].max))
           .attr("height", (d) => height - y(d.values[zoneType].min));

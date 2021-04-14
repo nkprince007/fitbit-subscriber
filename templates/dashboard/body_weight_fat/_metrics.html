@@ -166,7 +166,7 @@
           path.attr("d", (d) =>
             d3
               .line()
-              .x((d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+              .x((d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
               .y((d) => y(+d.value))(d.values)
           );
         });
@@ -218,7 +218,7 @@
           .append("circle")
           .attr("fill", "rgb(255, 127, 14)")
           .attr("r", 4)
-          .attr("cx", (d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+          .attr("cx", (d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
           .attr("cy", (d) => y(+d.value));
 
         const cgSquare = svg
@@ -237,7 +237,7 @@
               `, -${this.getAttribute("height") / 2})`
             );
           })
-          .attr("x", (d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+          .attr("x", (d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
           .attr("y", (d) => y(+d.value));
       });
 

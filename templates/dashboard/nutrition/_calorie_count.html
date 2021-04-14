@@ -145,7 +145,7 @@
           .data((d) => d)
           .enter()
           .append("rect")
-          .attr("x", (d) => x(moment(d.data.date, "DD/MM/YYYY").toDate()))
+          .attr("x", (d) => x(moment.utc(d.data.date, "DD/MM/YYYY").toDate()))
           .attr("y", (d) => y(d[1]))
           .attr("height", (d) => y(d[0]) - y(d[1]))
           .attr("width", x.bandwidth());

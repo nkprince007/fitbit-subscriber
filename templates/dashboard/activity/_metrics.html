@@ -127,7 +127,7 @@
           path.attr("d", (d) =>
             d3
               .line()
-              .x((d) => x(moment(d.date, "DD/MM/YYYY").toDate()))
+              .x((d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
               .y((d) => y(+d.value))(d.values)
           );
         });
@@ -140,7 +140,7 @@
         .attr("x", width / 2)
         .text((d) => d.key);
 
-      // Draw the line
+      // Draw the optimal line
       svg
         .append("path")
         .attr("fill", "none")

@@ -91,12 +91,11 @@
   function getDatesInRange(start, end) {
     const dates = [];
     const startDate = new Date(
-      start.getFullYear(),
-      start.getMonth(),
-      start.getDate()
+      Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())
     );
-    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-
+    const endDate = new Date(
+      Date.UTC(end.getFullYear(), end.getMonth(), end.getDate())
+    );
     for (
       let dt = new Date(startDate);
       dt <= end;

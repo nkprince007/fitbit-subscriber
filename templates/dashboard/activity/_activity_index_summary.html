@@ -36,7 +36,7 @@
 <script>
   function getWeekStart(dataItem) {
     const { start } = dataItem.weekRange;
-    return moment(start, "DD/MM/YYYY").toDate();
+    return moment.utc(start, "DD/MM/YYYY").toDate();
   }
 
   function buildPALLegend() {
@@ -90,8 +90,8 @@
       patientId,
     }).then((data) => {
       const { summaries } = data;
-      const startDate = moment(data.startDate, "DD/MM/YYYY").toDate();
-      const endDate = moment(data.endDate, "DD/MM/YYYY").toDate();
+      const startDate = moment.utc(data.startDate, "DD/MM/YYYY").toDate();
+      const endDate = moment.utc(data.endDate, "DD/MM/YYYY").toDate();
       const weeks = [];
       for (let currDate = startDate; currDate.getTime() < endDate.getTime(); ) {
         weeks.push(currDate);
