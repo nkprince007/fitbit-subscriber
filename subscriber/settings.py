@@ -94,6 +94,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'subscriber.wsgi.application'
 
+# django-rest-framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+    ]
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
