@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
@@ -20,9 +21,9 @@ from fitbit_auth.views import index, webhook_listen
 from fitbit_data.views import dashboard
 
 
-urlpatterns = [
+admin_path = [path('admin/', admin.site.urls)] if settings.DEBUG else []
+urlpatterns = admin_path + [
     path('webhook/', webhook_listen),
-    path('admin/', admin.site.urls),
     path('auth/', include('fitbit_auth.urls')),
     path('data/', include('fitbit_data.urls')),
     path('home/', dashboard, name='home'),
