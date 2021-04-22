@@ -250,7 +250,9 @@
           .attr("x", (d) => x(moment.utc(d.date, "YYYY-MM-DD").toDate()))
           .attr("width", x.bandwidth())
           .attr("y", (d) => y(d.values[zoneType].max))
-          .attr("height", (d) => height - y(d.values[zoneType].min))
+          .attr("height", (d) =>
+            Math.abs(y(d.values[zoneType].max) - y(d.values[zoneType].min))
+          )
           .style("cursor", "pointer")
           .append("title")
           .text(
