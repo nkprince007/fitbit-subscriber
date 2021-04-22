@@ -8,6 +8,11 @@
     >
       Physical Activity Level (PAL)
     </a>
+    <i
+      style="cursor: pointer"
+      class="fa fa-question-circle"
+      title="Physical activity level is defined as the ratio between total energy expenditure and resting energy expenditure per day. It is a dimension-less quantity."
+    ></i>
   </p>
   <div id="activity-heatmap"></div>
   <div id="activity-heatmap-legend">
@@ -63,13 +68,17 @@
     const boxCount = 9;
     const height = colorContainer.style("height");
     const { width } = colorContainer.node().getBoundingClientRect();
-    d3.schemeGreens[boxCount].forEach((color) => {
+    d3.schemeGreens[boxCount].forEach((color, i) => {
       colorContainer
         .append("div")
         .attr("class", "zone")
         .style("width", `${width / boxCount}px`)
         .style("height", height)
-        .style("background-color", color);
+        .style("background-color", color)
+        .attr(
+          "title",
+          ((i * 4) / 9).toFixed(2) + " - " + (((i + 1) * 4) / 9).toFixed(2)
+        );
     });
   }
 
@@ -170,7 +179,7 @@
         .append("title")
         .text(
           (d) =>
-            `Physical Activity Level: ${
+            `PAL: ${
               d.physicalActivityLevel !== null
                 ? d.physicalActivityLevel.toFixed(2)
                 : "Unknown"
