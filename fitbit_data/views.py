@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
@@ -6,8 +8,8 @@ from rest_framework import status
 
 from fitbit_auth.models import FitbitUser, User
 from fitbit_auth.serializers import FitbitUserSerializer
+from fitbit_data.models import ActivitySummary
 from fitbit_data.utils import (get_patient_id,
-                               get_period,
                                format_date,
                                get_range,
                                get_week_end_date,
@@ -49,28 +51,43 @@ def get_activity_summary(request):
     bmr = fb_user.basal_metabolic_rate
 
     start_date, end_date = get_range(request)
+
+    print(start_date, end_date)
+    start_date, end_date = get_week_start_date(
+        start_date), get_week_end_date(end_date)
+
+    print(start_date, end_date)
     summaries = fb_user.activity_summary.filter(
         date__gte=start_date, date__lte=end_date)
 
     response = []
-    for summary in summaries:
-        response.append({
-            'weekIndex': 1,
-            'weekDay': summary.date.strftime('%a'),
-            'physicalActivityLevel': (
+    date = start_date
+    delta = timedelta(days=1)
+    while date <= end_date:
+        data = {
+            'weekDay': date.strftime('%a'),
+            'date': format_date(date),
+            'weekRange': {
+                'start': format_date(get_week_start_date(date)),
+                'end': format_date(get_week_end_date(date)),
+            },
+        }
+        try:
+            summary = summaries.get(date=date)
+            data['physicalActivityLevel'] = (
                 summary.data.get('summary').get('caloriesOut') / bmr
                 if summary.data and summary.data.get('summary')
-                and summary.data.get('summary').get('caloriesOut') else 0),
-            'date': format_date(summary.date),
-            'weekRange': {
-                'start': format_date(get_week_start_date(summary.date)),
-                'end': format_date(get_week_end_date(summary.date)),
-            }
-        })
+                and summary.data.get('summary').get('caloriesOut') else 0)
+        except ActivitySummary.DoesNotExist:
+            data['physicalActivityLevel'] = None
+        finally:
+            response.append(data)
+        date += delta
+
     return Response({
         'summaries': response,
-        'startDate': format_date(get_week_start_date(start_date)),
-        'endDate': format_date(get_week_end_date(end_date))
+        'startDate': format_date(start_date),
+        'endDate': format_date(end_date),
     })
 
 

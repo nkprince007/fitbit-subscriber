@@ -12,11 +12,11 @@ def format_date(date: datetime, fmt: Optional[str] = '%d/%m/%Y') -> str:
 
 
 def get_week_start_date(date):
-    return date - timedelta(date.weekday() + 1)
+    return date - timedelta((date.weekday() + 1) % 7)
 
 
 def get_week_end_date(date):
-    return date + timedelta(5 - date.weekday())
+    return date + timedelta((5 - date.weekday()) % 7)
 
 
 def get_patient_id(request):

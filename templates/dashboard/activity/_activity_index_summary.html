@@ -2,7 +2,7 @@
 
 <div class="flex-fill">
   <p class="m-0 p-0 text-center">
-    <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/">
+    <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/">
       Physical Activity Level (PAL)
     </a>
   </p>
@@ -10,8 +10,14 @@
   <div id="activity-heatmap-legend">
     <div class="color-container"></div>
     <div class="range">
-      <span>Low</span>
-      <span>High</span>
+      <div>
+        <span>Low </span>
+        <span>0 = Dead</span>
+      </div>
+      <div>
+        <span>High</span>
+        <span>4 = Athletes</span>
+      </div>
     </div>
   </div>
 </div>
@@ -20,16 +26,24 @@
   #activity-heatmap-legend .color-container {
     height: 16px;
     box-sizing: content-box;
-    width: calc(100% - 4em - 2px);
-    margin: 1em 2em 0em 2em;
+    width: calc(100% - 5em - 2px);
+    margin: 1em 2.5em 0em 2.5em;
     border: 1px solid black;
     display: flex;
   }
 
   #activity-heatmap-legend .range {
     display: flex;
-    padding: 0 1em;
+    padding: 0 0 0 0.5em;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  #activity-heatmap-legend .range > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 </style>
 
@@ -101,7 +115,7 @@
       buildPALLegend();
 
       // Build X scale:
-      const x = d3.scaleBand().range([0, width]).domain(weeks).padding(0);
+      const x = d3.scaleBand().range([0, width]).domain(weeks).padding(0.01);
 
       svg
         .append("g")
@@ -116,9 +130,9 @@
                 new Date(start.toDate().getTime() + 6 * 1000 * 60 * 60 * 24)
               );
               if (weeks.length <= 4) {
-                return `${start.format("MMM D")}-${end.format("MMM D")}`;
+                return `${start.format("DD/MM")} - ${end.format("DD/MM")}`;
               } else {
-                return `${start.format("MM/DD")}`;
+                return `${start.format("MMM")}`;
               }
             })
         );
@@ -128,7 +142,7 @@
         .scaleBand()
         .range([height, margin.bottom])
         .domain(weekdays)
-        .padding(0);
+        .padding(0.01);
       svg.append("g").call(d3.axisLeft(y).tickSize(0));
 
       svg
@@ -140,11 +154,38 @@
         .attr("y", (d) => y(d.weekDay))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+        .style('cursor', 'pointer')
         .style("fill", (d) => {
           // Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/
           // PAL Value: 0 = dead, 2-2.5 = average, 4 = professional athletes
-          return d3.interpolateGreens(d.physicalActivityLevel / 2.5);
-        });
+          return d.physicalActivityLevel !== null ? d3.interpolateGreens(d.physicalActivityLevel / 2.5) : 'transparent';
+        })
+        .append('title')
+        .text(d =>
+`Physical Activity Level: ${d.physicalActivityLevel !== null ? d.physicalActivityLevel.toFixed(2) : 'Unknown'}
+Date: ${d.date}`)
+
+      if (weeks.length > 4) {
+        svg.selectAll()
+          .data(summaries)
+          .enter()
+          .append('text')
+          .attr("x", (d) => x(getWeekStart(d)) + x.bandwidth()/2)
+          .attr("y", (d) => y(d.weekDay) + y.bandwidth()/2)
+          .attr('text-anchor', 'middle')
+          .attr("alignment-baseline", "middle")
+          .attr('font-size', 10)
+          .attr("width", x.bandwidth())
+          .attr("height", y.bandwidth())
+          .style('cursor', 'pointer')
+          .text(d => moment.utc(d.date, 'DD/MM/YYYY').format(weeks.length >= 6 ? 'DD': 'DD/MM'))
+          .append('title')
+          .text(d =>
+`Physical Activity Level: ${d.physicalActivityLevel !== null ? d.physicalActivityLevel.toFixed(2) : 'Unknown'}
+Date: ${d.date}`)
+      }
     });
   }
 </script>
