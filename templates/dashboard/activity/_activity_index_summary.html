@@ -2,7 +2,10 @@
 
 <div class="flex-fill">
   <p class="m-0 p-0 text-center">
-    <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/">
+    <a
+      target="_blank"
+      href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/"
+    >
       Physical Activity Level (PAL)
     </a>
   </p>
@@ -12,11 +15,11 @@
     <div class="range">
       <div>
         <span>Low </span>
-        <span>0 = Dead</span>
+        <span style="font-size: 0.75rem">0 = Dead</span>
       </div>
       <div>
         <span>High</span>
-        <span>4 = Athletes</span>
+        <span style="font-size: 0.75rem">4 = Athletes</span>
       </div>
     </div>
   </div>
@@ -34,7 +37,7 @@
 
   #activity-heatmap-legend .range {
     display: flex;
-    padding: 0 0 0 0.5em;
+    padding: 0 0.5em 0 0.5em;
     justify-content: space-between;
     align-items: center;
   }
@@ -154,37 +157,56 @@
         .attr("y", (d) => y(d.weekDay))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1)
-        .style('cursor', 'pointer')
+        .attr("stroke", "black")
+        .attr("stroke-width", 1)
+        .style("cursor", "pointer")
         .style("fill", (d) => {
           // Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3636460/
           // PAL Value: 0 = dead, 2-2.5 = average, 4 = professional athletes
-          return d.physicalActivityLevel !== null ? d3.interpolateGreens(d.physicalActivityLevel / 2.5) : 'transparent';
+          return d.physicalActivityLevel !== null
+            ? d3.interpolateGreens(d.physicalActivityLevel / 2.5)
+            : "transparent";
         })
-        .append('title')
-        .text(d =>
-`Physical Activity Level: ${d.physicalActivityLevel !== null ? d.physicalActivityLevel.toFixed(2) : 'Unknown'}
-Date: ${d.date}`)
+        .append("title")
+        .text(
+          (d) =>
+            `Physical Activity Level: ${
+              d.physicalActivityLevel !== null
+                ? d.physicalActivityLevel.toFixed(2)
+                : "Unknown"
+            }
+Date: ${d.date}`
+        );
 
       if (weeks.length > 4) {
-        svg.selectAll()
+        svg
+          .selectAll()
           .data(summaries)
           .enter()
-          .append('text')
-          .attr("x", (d) => x(getWeekStart(d)) + x.bandwidth()/2)
-          .attr("y", (d) => y(d.weekDay) + y.bandwidth()/2)
-          .attr('text-anchor', 'middle')
+          .append("text")
+          .attr("x", (d) => x(getWeekStart(d)) + x.bandwidth() / 2)
+          .attr("y", (d) => y(d.weekDay) + y.bandwidth() / 2)
+          .attr("text-anchor", "middle")
           .attr("alignment-baseline", "middle")
-          .attr('font-size', 10)
+          .attr("font-size", 10)
           .attr("width", x.bandwidth())
           .attr("height", y.bandwidth())
-          .style('cursor', 'pointer')
-          .text(d => moment.utc(d.date, 'DD/MM/YYYY').format(weeks.length >= 6 ? 'DD': 'DD/MM'))
-          .append('title')
-          .text(d =>
-`Physical Activity Level: ${d.physicalActivityLevel !== null ? d.physicalActivityLevel.toFixed(2) : 'Unknown'}
-Date: ${d.date}`)
+          .style("cursor", "pointer")
+          .text((d) =>
+            moment
+              .utc(d.date, "DD/MM/YYYY")
+              .format(weeks.length >= 6 ? "DD" : "DD/MM")
+          )
+          .append("title")
+          .text(
+            (d) =>
+              `Physical Activity Level: ${
+                d.physicalActivityLevel !== null
+                  ? d.physicalActivityLevel.toFixed(2)
+                  : "Unknown"
+              }
+Date: ${d.date}`
+          );
       }
     });
   }
