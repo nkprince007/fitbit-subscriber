@@ -250,7 +250,15 @@
           .attr("x", (d) => x(moment.utc(d.date, "YYYY-MM-DD").toDate()))
           .attr("width", x.bandwidth())
           .attr("y", (d) => y(d.values[zoneType].max))
-          .attr("height", (d) => height - y(d.values[zoneType].min));
+          .attr("height", (d) => height - y(d.values[zoneType].min))
+          .style("cursor", "pointer")
+          .append("title")
+          .text(
+            (d) =>
+              `Minimum: ${d.values[zoneType].min} bpm
+Minimum: ${d.values[zoneType].max} bpm
+Date: ${moment.utc(d.date, "YYYY-MM-DD").format("DD MMM YYYY")}`
+          );
       };
 
       zoneTypes.forEach((zoneType, i) => drawHeartRates(zoneType, i));
