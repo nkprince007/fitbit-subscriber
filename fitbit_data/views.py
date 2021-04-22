@@ -51,12 +51,8 @@ def get_activity_summary(request):
     bmr = fb_user.basal_metabolic_rate
 
     start_date, end_date = get_range(request)
-
-    print(start_date, end_date)
     start_date, end_date = get_week_start_date(
         start_date), get_week_end_date(end_date)
-
-    print(start_date, end_date)
     summaries = fb_user.activity_summary.filter(
         date__gte=start_date, date__lte=end_date)
 
