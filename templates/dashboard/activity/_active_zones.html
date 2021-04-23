@@ -4,20 +4,67 @@
   #activity-zones {
     padding: 0 8px;
   }
+
+  #activity-zones-legend {
+    position: absolute;
+    top: 0.25em;
+    right: 0;
+  }
+
+  #activity-zones-legend .zone {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 12px;
+  }
+
+  #activity-zones-legend .zone .square {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    border-radius: 1000vw;
+  }
+
+  #activity-zones-legend .zone .text {
+    display: inline-block;
+    margin: 0;
+    margin-left: 4px;
+    font-size: 0.65rem;
+    font-weight: bold;
+  }
 </style>
 
 <div class="">
+  <div id="activity-zones-legend"></div>
   <div id="activity-zones"></div>
 </div>
 
 <script>
+  function parseActivityZones(dates, data) {
+    return dates.map(
+      (date) =>
+        data.find(
+          (d) =>
+            moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
+            date.getTime()
+        ) || {
+          date,
+          sedentary: 0,
+          lightlyActive: 0,
+          fairlyActive: 0,
+          veryActive: 0,
+          untracked: 24,
+        }
+    );
+  }
+
   function redrawActivityZones({ range, patientId }) {
     const activityZonesEl = $("#activity-zones");
+    const legendEl = d3.select("#activity-zones-legend");
 
     // set the dimensions and margins of the graph
-    var margin = { top: 20, right: 15, bottom: 75, left: 30 },
+    var margin = { top: 20, right: 15, bottom: 25, left: 30 },
       width = activityZonesEl.width() - margin.left - margin.right,
-      height = activityZonesEl.width() / 3 - margin.top - margin.bottom;
+      height = 160 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     var svg = d3
@@ -35,194 +82,107 @@
     }).then((data) => {
       if (data.length <= 0) return;
 
-      // List of groups = header of the csv files
-      var keys = Object.keys(data[0]).filter((k) => k != "date");
+      const subgroups = [
+        "sedentary",
+        "lightlyActive",
+        "fairlyActive",
+        "veryActive",
+        "untracked",
+      ];
+      const dates = getDatesInRange(range.start, range.end);
+      const color = d3
+        .scaleOrdinal()
+        .domain(subgroups)
+        .range(d3.schemeCategory20);
+      const results = parseActivityZones(dates, data);
+      const stackedData = d3.stack().keys(subgroups)(results);
 
-      // color palette
-      var color = d3.scaleOrdinal().domain(keys).range(d3.schemeCategory20);
-
-      var stackedData = d3.stack().keys(keys)(data);
-
-      //////////
-      // AXIS //
-      //////////
+      subgroups.forEach((group) => {
+        const zone = legendEl.append("div").attr("class", "zone");
+        zone
+          .append("div")
+          .attr("class", "square")
+          .style("background-color", color(group));
+        zone
+          .append("p")
+          .attr("class", "text")
+          .text(camelCaseToNormalCase(group).replace(" Minutes", ""));
+      });
 
       // Add X axis
-      var x = d3
-        .scaleTime()
-        .domain(
-          d3.extent(data, (d) => moment.utc(d.date, "DD/MM/YYYY").toDate())
-        )
-        .range([0, width]);
-      var xAxis = svg
+      const x = d3.scaleBand().domain(dates).range([0, width]).padding([0.2]);
+      svg
         .append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x).ticks(5));
-
-      // Add X axis label:
-      svg
-        .append("text")
-        .attr("text-anchor", "end")
-        .attr("x", width + margin.left / 2)
-        .attr("y", height + 30)
-        .text("Date");
-
-      // Add Y axis label:
-      svg
-        .append("text")
-        .attr("text-anchor", "end")
-        .attr("x", -margin.left)
-        .attr("y", -10)
-        .text("Active minutes")
-        .attr("text-anchor", "start");
-
-      // Add Y axis
-      var y = d3
-        .scaleLinear()
-        .domain(
-          d3.extent(data, (d) =>
-            keys
-              .map((k) => parseInt(d[k], 10))
-              .reduce((total, num) => total + num, 0)
-          )
-        )
-        .range([height, 0]);
-      svg.append("g").call(d3.axisLeft(y).ticks(5));
-
-      //////////
-      // BRUSHING AND CHART //
-      //////////
-
-      // Add a clipPath: everything out of this area won't be drawn.
-      var clip = svg
-        .append("defs")
-        .append("svg:clipPath")
-        .attr("id", "clip")
-        .append("svg:rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("x", 0)
-        .attr("y", 0);
-
-      // Add brushing
-      var brush = d3
-        .brushX() // Add the brush feature using the d3.brush function
-        .extent([
-          [0, 0],
-          [width, height],
-        ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-        .on("end", updateChart); // Each time the brush selection changes, trigger the 'updateChart' function
-
-      // Create the scatter variable: where both the circles and the brush take place
-      var areaChart = svg.append("g").attr("clip-path", "url(#clip)");
-
-      // Area generator
-      var area = d3
-        .area()
-        .x(({ data }) => x(moment.utc(data.date, "DD/MM/YYYY").toDate()))
-        .y0((d) => y(d[0]))
-        .y1((d) => y(d[1]));
-
-      // Show the areas
-      areaChart
-        .selectAll("mylayers")
-        .data(stackedData)
-        .enter()
-        .append("path")
-        .attr("class", (d) => "myArea " + hyphenCase(d.key))
-        .style("fill", (d) => color(d.key))
-        .attr("d", area);
-
-      // Add the brushing
-      areaChart.append("g").attr("class", "brush").call(brush);
-
-      var idleTimeout;
-      function idled() {
-        idleTimeout = null;
-      }
-
-      // A function that update the chart for given boundaries
-      function updateChart() {
-        extent = d3.event.selection;
-
-        // If no selection, back to initial coordinate. Otherwise, update X axis domain
-        if (!extent) {
-          if (!idleTimeout) return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
-          x.domain(range);
-        } else {
-          x.domain([x.invert(extent[0]), x.invert(extent[1])]);
-          areaChart.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
-        }
-
-        // Update axis and area position
-        xAxis.transition().duration(1000).call(d3.axisBottom(x).ticks(5));
-        areaChart.selectAll("path").transition().duration(1000).attr("d", area);
-      }
-
-      //////////
-      // HIGHLIGHT GROUP //
-      //////////
-
-      // What to do when one group is hovered
-      var highlight = function (d) {
-        // reduce opacity of all groups
-        d3.selectAll(".myArea").style("opacity", 0.1);
-        // expect the one that is hovered
-        d3.select("." + hyphenCase(d)).style("opacity", 1);
-      };
-
-      // And when it is not hovered anymore
-      var noHighlight = function (d) {
-        d3.selectAll(".myArea").style("opacity", 1);
-      };
-
-      //////////
-      // LEGEND //
-      //////////
-
-      // Add one dot in the legend for each name.
-      const size = 16;
-      const groups = svg
-        .selectAll("labels")
-        .data(keys)
-        .enter()
-        .append("g")
-        .attr("class", "label")
-        .attr(
-          "transform",
-          (_, i) => `translate(
-            ${i * width * 0.25 + (width * 0.25) / 2},
-            ${height + margin.bottom - 2 * size}
-          )`
+        .call(
+          d3
+            .axisBottom(x)
+            .tickValues(
+              x
+                .domain()
+                .filter((d, i) =>
+                  x.domain().length < 14
+                    ? true
+                    : x.domain().length <= 21
+                    ? i % 2 === 0
+                    : x.domain().length <= 35
+                    ? i % 5 === 0
+                    : i % 7 === 0
+                )
+            )
+            .tickFormat((d) => moment(d).format("MMM D"))
         );
 
-      groups
-        .append("rect")
-        .attr("width", size)
-        .attr("height", size)
-        .attr("rx", size / 2)
-        .attr("ry", size / 2)
-        .attr("y", -size / 2)
-        .attr("x", -size * 1.25)
-        .style("fill", function (d) {
-          return color(d);
-        })
-        .on("mouseover", highlight)
-        .on("mouseleave", noHighlight);
+      // Add Y axis
+      const y = d3.scaleLinear().domain([0, 24]).range([height, 0]);
+      svg
+        .append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(y).tickFormat(d3.format("d")));
 
-      groups
+      svg
         .append("text")
-        .style("fill", function (d) {
-          return color(d);
-        })
-        .text(function (d) {
-          return d;
-        })
-        .attr("text-anchor", "left")
+        .attr("text-anchor", "middle")
+        .attr("x", 0)
+        .attr("y", -8)
+        .text("Hours");
+
+      // Show the bars
+      svg
+        .append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedData)
+        .enter()
+        .append("g")
+        .attr("fill", (d) => color(d.key))
+        .selectAll("rect")
+        // enter a second time = loop subgroup per subgroup to add all rectangles
+        .data((d) => d)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => x(moment.utc(d.data.date, "DD/MM/YYYY").toDate()))
+        .attr("y", (d) => y(d[1]))
+        .attr("height", (d) => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth())
         .style("cursor", "pointer")
-        .style("alignment-baseline", "middle")
-        .on("mouseover", highlight)
-        .on("mouseleave", noHighlight);
+        .append("title")
+        .text(
+          (d) =>
+            `Sedentary: ${d.data.sedentary.toFixed(2)} ${
+              d.data.sedentary === 1 ? "hour" : "hours"
+            }\nLightly Active: ${d.data.lightlyActive.toFixed(2)} ${
+              d.data.lightlyActive === 1 ? "hour" : "hours"
+            }\nFairly Active: ${d.data.fairlyActive.toFixed(2)} ${
+              d.data.fairlyActive === 1 ? "hour" : "hours"
+            }\nVery Active: ${d.data.veryActive.toFixed(2)} ${
+              d.data.veryActive === 1 ? "hour" : "hours"
+            }\nUntracked: ${d.data.untracked.toFixed(2)} ${
+              d.data.untracked === 1 ? "hour" : "hours"
+            }\nDate: ${moment
+              .utc(d.data.date, "DD/MM/YYYY")
+              .format("DD MMM YYYY")}`
+        );
     });
   }
 </script>
