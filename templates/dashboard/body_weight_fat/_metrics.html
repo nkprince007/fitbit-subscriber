@@ -28,7 +28,6 @@
 
   .label-box.blue {
     background-color: rgb(31, 119, 180);
-    border-radius: 0;
   }
 
   .label {
@@ -52,7 +51,7 @@
     </div>
     <div class="label">
       <div class="label-box blue"></div>
-      <div class="label-name">Manually entered data</div>
+      <div class="label-name">Manual input from patient</div>
     </div>
   </div>
 </div>
@@ -212,33 +211,16 @@
         const cgCircle = svg
           .select(`#${generateIdForKey(set.key)}-value-group`)
           .selectAll(".circle-group")
-          .data(apiValues)
+          .data(set.values)
           .enter();
         cgCircle
           .append("circle")
-          .attr("fill", "rgb(255, 127, 14)")
+          .attr("fill", (v) =>
+            v.metric_type !== "API" ? "rgb(255, 127, 14)" : "rgb(31, 119, 180)"
+          )
           .attr("r", 4)
           .attr("cx", (d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
           .attr("cy", (d) => y(+d.value));
-
-        const cgSquare = svg
-          .select(`#${generateIdForKey(set.key)}-value-group`)
-          .selectAll(".square-group")
-          .data(manualValues)
-          .enter();
-        cgSquare
-          .append("rect")
-          .attr("fill", "rgb(31, 119, 180)")
-          .attr("width", 8)
-          .attr("height", 8)
-          .attr("transform", function () {
-            return (
-              `translate(-${this.getAttribute("width") / 2}` +
-              `, -${this.getAttribute("height") / 2})`
-            );
-          })
-          .attr("x", (d) => x(moment.utc(d.date, "DD/MM/YYYY").toDate()))
-          .attr("y", (d) => y(+d.value));
       });
 
       // Add titles
