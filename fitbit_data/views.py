@@ -115,10 +115,11 @@ def get_activity_zones(request):
     if len(zones) == 0:
         zones = [{
             'date': format_date(end_date),
-            # 'Sedentary': 0,
-            'Lightly active': 0,
-            'Fairly active': 0,
-            'Very active': 0,
+            'sedentary': 0,
+            'lightlyActive': 0,
+            'fairlyActive': 0,
+            'veryActive': 0,
+            'untracked': 24,
         }]
 
     return Response(zones)
