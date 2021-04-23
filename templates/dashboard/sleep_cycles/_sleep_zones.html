@@ -132,22 +132,10 @@
               .tickFormat((d) => moment(d).format("MMM D"))
           );
 
-        const yMax = d3.max(
-          results.map((x) =>
-            subgroups
-              .map((g) => parseInt(x[g]))
-              .reduce((total, v) => total + v, 0)
-          )
-        );
-        const size = Math.max(0, String(yMax).length - 1);
-
         // Add Y axis
         const y = d3
           .scaleLinear()
-          .domain([
-            0,
-            Math.ceil(yMax / Math.pow(10, size)) * Math.pow(10, size),
-          ])
+          .domain(getBarChartYDomain(results, subgroups))
           .range([height, 0]);
         svg
           .append("g")

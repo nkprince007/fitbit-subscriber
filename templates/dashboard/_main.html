@@ -102,6 +102,25 @@
     );
   }
 
+  function stepDomain(domain) {
+    const [min, max] = domain;
+    const minSize = Math.max(0, String(Math.round(min)).length - 1);
+    const maxSize = Math.max(0, String(Math.round(max)).length - 1);
+    return [
+      Math.floor(min / Math.pow(10, minSize)) * Math.pow(10, minSize),
+      Math.ceil(max / Math.pow(10, maxSize)) * Math.pow(10, maxSize),
+    ];
+  }
+
+  function getBarChartYDomain(results, subgroups) {
+    const yMax = d3.max(
+      results.map((x) =>
+        subgroups.map((g) => parseInt(x[g])).reduce((total, v) => total + v, 0)
+      )
+    );
+    return stepDomain([0, yMax]);
+  }
+
   function getDatesInRange(start, end) {
     const dates = [];
     const startDate = new Date(

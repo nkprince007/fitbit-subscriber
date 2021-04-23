@@ -90,7 +90,10 @@
           }
           optimals[s.key] = optimal;
         }
-        const y = d3.scaleLinear().domain(domain).range([height, 0]);
+        const y = d3
+          .scaleLinear()
+          .domain(stepDomain(domain))
+          .range([height, 0]);
         yAxes[s.key] = y;
         if (s.key === "Active Duration (min)") {
           svg1.call(d3.axisLeft(y).ticks(5));
