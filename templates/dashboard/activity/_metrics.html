@@ -6,19 +6,33 @@
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
   }
+
+  #activity-charts-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #activity-charts-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
-<div class="">
-  <div id="activity-charts"></div>
-</div>
+<div id="activity-charts"></div>
 
 <script>
   function redrawActivityMetrics({ range, patientId }) {
     const activityChartsEl = $("#activity-charts");
+    d3.select("body").append("div").attr("id", "activity-charts-tooltip");
     const optimals = {};
 
     // set the dimensions and margins of the graph
-    const margin = { top: 30, right: 10, bottom: 30, left: 35 },
+    const margin = { top: 30, right: 20, bottom: 30, left: 35 },
       width = activityChartsEl.width() / 2 - margin.left - margin.right,
       height = activityChartsEl.width() / 4 - margin.top - margin.bottom;
 
@@ -43,6 +57,7 @@
         .data(sumstat)
         .enter()
         .append("svg")
+        .attr("id", (s) => `${s.key}-svg`)
         .attr("font-size", "12px")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -51,7 +66,7 @@
 
       // Add X axis --> it is a date format
       const x = d3
-        .scaleTime()
+        .scaleUtc()
         .domain([range.start, range.end])
         .range([0, width]);
 
@@ -135,13 +150,22 @@
           );
         });
 
+      const units = {
+        active_duration: "(hours)",
+        distance_travelled: "(meters)",
+      };
+
       // Add titles
       svg
         .append("text")
         .attr("text-anchor", "middle")
         .attr("y", -10)
         .attr("x", width / 2)
-        .text((d) => d.key);
+        .text(
+          (d) =>
+            snakeCaseToNormalCase(d.key) +
+            (units[d.key] ? " " + units[d.key] : "")
+        );
 
       // Draw the optimal line
       svg
@@ -186,6 +210,78 @@
               .attr("fill", "steelblue")
               .attr("fill-opacity", 0.5);
           }
+        });
+
+      const tooltip = d3.select("#activity-charts-tooltip");
+      const tooltipLine = svg
+        .append("line")
+        .attr("id", (s) => `${s.key}-tooltipline`);
+      const tooltipCircle = svg
+        .append("circle")
+        .attr("id", (s) => `${s.key}-tooltipcircle`);
+      const dates = getDatesInRange(range.start, range.end);
+
+      svg
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("opacity", 0)
+        .each(function (s) {
+          const rectOverlay = d3.select(this);
+          rectOverlay.on("mouseover", function () {
+            tooltip.transition().duration(500).style("opacity", 1);
+            d3.select(`#${s.key}-tooltipline`).style("display", "block");
+            d3.select(`#${s.key}-tooltipcircle`).style("display", "block");
+          });
+          rectOverlay.on("mouseout", function () {
+            tooltip.transition().duration(1000).style("opacity", 0);
+            d3.select(`#${s.key}-tooltipline`).style("display", "none");
+            d3.select(`#${s.key}-tooltipcircle`).style("display", "none");
+          });
+          rectOverlay.on("mousemove", function () {
+            const mouse = d3.mouse(this);
+            let date = x.invert(mouse[0]);
+            const bisectIndex = d3.bisectLeft(dates, date);
+            const bisectedDate = dates[bisectIndex];
+            const diffHours =
+              (bisectedDate.getTime() - date.getTime()) / 1000 / 60 / 60;
+            date =
+              diffHours < 12
+                ? bisectedDate
+                : dates[Math.max(0, bisectIndex - 1)];
+
+            const y = yAxes[s.key];
+            const value = s.values.find(
+              (d) =>
+                moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
+                date.getTime()
+            );
+
+            if (value) {
+              d3.select(`#${s.key}-tooltipline`)
+                .attr("stroke", "black")
+                .attr("opacity", 0.5)
+                .attr("x1", x(date))
+                .attr("x2", x(date))
+                .attr("y1", 0)
+                .attr("y2", height);
+
+              d3.select(`#${s.key}-tooltipcircle`)
+                .attr("fill", "red")
+                .attr("stroke", "red")
+                .attr("fill-opacity", 0.5)
+                .attr("cx", x(date))
+                .attr("cy", y(value.value))
+                .attr("r", 4);
+
+              const padding = 15;
+              tooltip
+                .style("left", `${d3.event.pageX + padding}px`)
+                .style("top", `${d3.event.pageY + padding}px`).html(`
+<p>${snakeCaseToNormalCase(s.key)}: ${value.value}</p>
+<p>Date: ${moment.utc(date).format("MMM DD YYYY")}</p>`);
+            }
+          });
         });
     });
   }
