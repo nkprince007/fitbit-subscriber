@@ -40,6 +40,21 @@
   .label .label-name {
     font-size: 0.75em;
   }
+
+  #body-weight-fat-charts-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #body-weight-fat-charts-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
 <div class="">
@@ -67,6 +82,9 @@
 
   function redrawBodyMetricsChart(patientId, range, url) {
     const activityChartsEl = $("#body-weight-fat-charts");
+    d3.select("body")
+      .append("div")
+      .attr("id", "body-weight-fat-charts-tooltip");
     const { period } = range;
 
     // set the dimensions and margins of the graph
@@ -105,7 +123,7 @@
 
       // Add X axis --> it is a date format
       const x = d3
-        .scaleLinear()
+        .scaleUtc()
         .domain([range.start, range.end])
         .range([0, width]);
       svg
@@ -223,13 +241,92 @@
           .attr("cy", (d) => y(+d.value));
       });
 
+      const units = {
+        body_weight: "kg",
+        body_mass_index: "BMI",
+        body_fat: "%",
+      };
+
       // Add titles
       svg
         .append("text")
         .attr("text-anchor", "middle")
         .attr("y", -21)
         .attr("x", width / 2)
-        .text((d) => d.key);
+        .text((d) => snakeCaseToNormalCase(d.key) + " (" + units[d.key] + ")");
+
+      const tooltip = d3.select("#body-weight-fat-charts-tooltip");
+      const tooltipLine = svg
+        .append("line")
+        .attr("id", (s) => `${s.key}-body-tooltipline`);
+      const tooltipCircle = svg
+        .append("circle")
+        .attr("id", (s) => `${s.key}-body-tooltipcircle`);
+
+      const dates = getDatesInRange(range.start, range.end);
+
+      svg
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("opacity", 0)
+        .each(function (s) {
+          const rectOverlay = d3.select(this);
+          rectOverlay.on("mouseover", function () {
+            tooltip.style("display", "block");
+            d3.select(`#${s.key}-body-tooltipline`).style("display", "block");
+            d3.select(`#${s.key}-body-tooltipcircle`).style("display", "block");
+          });
+          rectOverlay.on("mouseout", function () {
+            tooltip.style("display", "none");
+            d3.select(`#${s.key}-body-tooltipline`).style("display", "none");
+            d3.select(`#${s.key}-body-tooltipcircle`).style("display", "none");
+          });
+          rectOverlay.on("mousemove", function () {
+            const mouse = d3.mouse(this);
+            let date = x.invert(mouse[0]);
+            const bisectIndex = d3.bisectLeft(dates, date);
+            const bisectedDate = dates[bisectIndex];
+            const diffHours =
+              (bisectedDate.getTime() - date.getTime()) / 1000 / 60 / 60;
+            date =
+              diffHours < 12
+                ? bisectedDate
+                : dates[Math.max(0, bisectIndex - 1)];
+
+            const y = yAxes[s.key];
+            const value = s.values.find(
+              (d) =>
+                moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
+                date.getTime()
+            );
+
+            if (value) {
+              d3.select(`#${s.key}-body-tooltipline`)
+                .attr("stroke", "black")
+                .attr("opacity", 0.5)
+                .attr("x1", x(date))
+                .attr("x2", x(date))
+                .attr("y1", 0)
+                .attr("y2", height);
+
+              d3.select(`#${s.key}-body-tooltipcircle`)
+                .attr("fill", "red")
+                .attr("stroke", "red")
+                .attr("fill-opacity", 0.5)
+                .attr("cx", x(date))
+                .attr("cy", y(value.value))
+                .attr("r", 4);
+
+              const padding = 20;
+              tooltip
+                .style("left", `${d3.event.pageX + padding}px`)
+                .style("top", `${d3.event.pageY + padding}px`)
+                .html(`<p>${snakeCaseToNormalCase(s.key)}: ${value.value}</p>
+<p>Date: ${moment.utc(date).format("MMM DD YYYY")}</p>`);
+            }
+          });
+        });
     });
   }
 

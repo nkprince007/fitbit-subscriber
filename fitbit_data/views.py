@@ -224,7 +224,7 @@ def get_body_fat_metrics(request):
             'value': log.fat,
             'metric_type': log.source,
             'date': format_date(log.date),
-            'metric': 'Body Fat (%)'
+            'metric': 'body_fat',
         })
 
     if len(response_data) == 0:
@@ -232,7 +232,7 @@ def get_body_fat_metrics(request):
             'value': 0,
             'metric_type': 'dummy',
             'date': format_date(end_date),
-            'metric': 'Body Fat (%)'
+            'metric': 'body_fat',
         }]
 
     return Response(response_data)
@@ -253,14 +253,14 @@ def get_body_weight_metrics(request):
             'value': log.bmi,
             'metric_type': log.source,
             'date': format_date(log.date),
-            'metric': 'Body Mass Index (BMI)',
+            'metric': 'body_mass_index',
             'optimal': 28.1,  # check 'optimal values.md'
         })
         response_data.append({
             'value': log.weight,
             'metric_type': log.source,
             'date': format_date(log.date),
-            'metric': 'Body Weight (kgs)'
+            'metric': 'body_weight',
         })
 
     if len(weight_logs) == 0:
@@ -268,12 +268,12 @@ def get_body_weight_metrics(request):
             'value': 0,
             'metric_type': 'dummy',
             'date': format_date(end_date),
-            'metric': 'Body Mass Index (BMI)'
+            'metric': 'body_mass_index',
         }, {
             'value': 0,
             'metric_type': 'dummy',
             'date': format_date(end_date),
-            'metric': 'Body Weight (kgs)'
+            'metric': 'body_weight',
         }]
     return Response(response_data)
 
