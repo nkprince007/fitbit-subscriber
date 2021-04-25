@@ -158,9 +158,9 @@ def get_activity_metrics(request):
         metrics.append({
             'date': format_date(summary.date),
             'metric': 'active_duration',
-            'value': summary.active_duration,  # min
+            'value': summary.active_duration / 60,  # hours
             # Check 'optimal values.md'
-            'optimal': 27
+            'optimal': 27 / 60  # hours
         })
 
     if len(metrics) == 0:
