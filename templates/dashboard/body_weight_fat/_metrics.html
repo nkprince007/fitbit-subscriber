@@ -318,11 +318,26 @@
                 .attr("cy", y(value.value))
                 .attr("r", 4);
 
+              const optimal = s.values[0].optimal;
+              let optimalString;
+              if (
+                optimal &&
+                Number.isFinite(optimal.min) &&
+                Number.isFinite(optimal.max)
+              ) {
+                optimalString = `${formatNumber(optimal.min)} - ${formatNumber(
+                  optimal.max
+                )}`;
+              } else if (Number.isFinite(optimal)) {
+                optimalString = String(formatNumber(optimal));
+              }
+
               const padding = 20;
               tooltip
                 .style("left", `${d3.event.pageX + padding}px`)
-                .style("top", `${d3.event.pageY + padding}px`)
-                .html(`<p>${snakeCaseToNormalCase(s.key)}: ${value.value}</p>
+                .style("top", `${d3.event.pageY + padding}px`).html(`
+<p>${snakeCaseToNormalCase(s.key)}: ${formatNumber(value.value, 1)}</p>
+${optimalString ? "<p>Optimal value: " + optimalString + "</p>" : ""}
 <p>Date: ${moment.utc(date).format("MMM DD YYYY")}</p>`);
             }
           });
