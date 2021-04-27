@@ -28,8 +28,12 @@
 <script>
   function redrawActivityMetrics({ range, patientId }) {
     const activityChartsEl = $("#activity-charts");
-    d3.select("body").append("div").attr("id", "activity-charts-tooltip");
     const optimals = {};
+
+    d3.select("body")
+      .append("div")
+      .style("opacity", 0)
+      .attr("id", "activity-charts-tooltip");
 
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 20, bottom: 30, left: 35 },
@@ -226,6 +230,7 @@
         .attr("width", width)
         .attr("height", height)
         .attr("opacity", 0)
+        .style("cursor", "pointer")
         .each(function (s) {
           const rectOverlay = d3.select(this);
           rectOverlay.on("mouseover", function () {

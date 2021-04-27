@@ -82,10 +82,14 @@
 
   function redrawBodyMetricsChart(patientId, range, url) {
     const activityChartsEl = $("#body-weight-fat-charts");
-    d3.select("body")
-      .append("div")
-      .attr("id", "body-weight-fat-charts-tooltip");
     const { period } = range;
+
+    if (!document.getElementById("body-weight-fat-charts-tooltip")) {
+      d3.select("body")
+        .append("div")
+        .attr("id", "body-weight-fat-charts-tooltip")
+        .style("display", "none");
+    }
 
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 20, bottom: 30, left: 30 },
@@ -270,6 +274,7 @@
         .attr("width", width)
         .attr("height", height)
         .attr("opacity", 0)
+        .style("cursor", "pointer")
         .each(function (s) {
           const rectOverlay = d3.select(this);
           rectOverlay.on("mouseover", function () {
