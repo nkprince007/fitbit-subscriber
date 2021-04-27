@@ -36,6 +36,21 @@
     font-size: 0.75rem;
     font-weight: bold;
   }
+
+  #sleep-zones-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #sleep-zones-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
 <script>
@@ -65,6 +80,11 @@
   function redrawSleepZones({ patientId, range }) {
     const sleepZonesEl = $("#sleep-zones");
     const legendEl = d3.select("#sleep-zones-legend");
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("id", "sleep-zones-tooltip")
+      .style("display", "none");
 
     // set the dimensions and margins of the graph
     var margin = { top: 20, right: 15, bottom: 25, left: 30 },
@@ -163,6 +183,7 @@
           .data((d) => d)
           .enter()
           .append("rect")
+          .attr("class", (_, i) => `sleep-zones-bar sleep-zones-bar-${i}`)
           .attr("x", (d) => x(moment.utc(d.data.date, "DD/MM/YYYY").toDate()))
           .attr("y", (d) => y(d[1]))
           .attr("height", (d) => y(d[0]) - y(d[1]))
@@ -181,6 +202,55 @@
                 .utc(d.data.date, "DD/MM/YYYY")
                 .format("DD MMM YYYY")}`
           );
+
+        svg
+          .append("rect")
+          .attr("width", width)
+          .attr("height", height)
+          .style("cursor", "pointer")
+          .attr("opacity", 0)
+          .on("mousemove", function () {
+            d3.selectAll(".sleep-zones-bar").attr("opacity", 1);
+
+            const mouse = d3.mouse(this);
+            const eachBand = x.step();
+            const index = Math.max(0, Math.round(mouse[0] / eachBand) - 1);
+            const date = x.domain()[index];
+            const barIndex = results.findIndex(
+              (d) =>
+                moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
+                date.getTime()
+            );
+            const sleepZone = results[barIndex];
+            if (sleepZone) {
+              d3.selectAll(".sleep-zones-bar").attr("opacity", 0.25);
+              const bar = d3
+                .selectAll(`.sleep-zones-bar-${barIndex}`)
+                .attr("opacity", 1);
+
+              tooltip
+                .style("display", "block")
+                .style("top", `${d3.event.pageY + 20}px`)
+                .style("left", function () {
+                  const { width } = this.getBoundingClientRect();
+                  return `${d3.event.pageX - width / 2}px`;
+                }).html(`
+<p>Awake: ${formatNumber(sleepZone.awakeMinutes)} minutes</p>
+<p>Restless: ${formatNumber(sleepZone.restlessMinutes)} minutes</p>
+<p>Asleep: ${formatNumber(sleepZone.asleepMinutes)} minutes</p>
+<p>Date: ${moment.utc(date).format("DD MMM YYYY")}</p>`);
+              return;
+            }
+
+            tooltip.style("display", "none");
+          })
+          .on("mouseover", function () {
+            tooltip.style("display", "block");
+          })
+          .on("mouseout", function () {
+            tooltip.style("display", "none");
+            d3.selectAll(".sleep-zones-bar").attr("opacity", 1);
+          });
       }
     );
   }

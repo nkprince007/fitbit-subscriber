@@ -33,12 +33,32 @@
   #nutrition-bar-plot .y-axis .tick:nth-child(2n) {
     visibility: hidden;
   }
+
+  #nutrition-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #nutrition-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
 <script>
   function redrawNutritionBarPlots({ range, patientId }) {
     const barPlotEl = $("#nutrition-bar-plot");
     const legendEl = d3.select("#nutrition-legend");
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("id", "nutrition-tooltip")
+      .style("display", "none");
 
     // set the dimensions and margins of the graph
     const margin = { top: 20, right: 30, bottom: 20, left: 50 },
@@ -142,22 +162,60 @@
           .data((d) => d)
           .enter()
           .append("rect")
+          .attr("class", (_, i) => `nutrition-bar nutrition-bar-${i}`)
           .attr("x", (d) => x(moment.utc(d.data.date, "DD/MM/YYYY").toDate()))
           .attr("y", (d) => y(d[1]))
           .attr("height", (d) => y(d[0]) - y(d[1]))
           .attr("width", x.bandwidth())
+          .style("cursor", "pointer");
+
+        svg
+          .append("rect")
+          .attr("width", width)
+          .attr("height", height)
           .style("cursor", "pointer")
-          .append("title")
-          .text(
-            (d) =>
-              `Current intake: ${(d.data.current_value || 0).toFixed(
-                2
-              )} calories\nOptimal intake: ${(
-                d.data.optimal_value || 0
-              ).toFixed(2)} calories\nDate: ${moment
-                .utc(d.data.date, "DD/MM/YYYY")
-                .format("DD MMM YYYY")}`
-          );
+          .attr("opacity", 0)
+          .on("mousemove", function () {
+            d3.selectAll(".nutrition-bar").attr("opacity", 1);
+
+            const mouse = d3.mouse(this);
+            const eachBand = x.step();
+            const index = Math.max(0, Math.round(mouse[0] / eachBand) - 1);
+            const date = x.domain()[index];
+            const barIndex = data.findIndex(
+              (d) =>
+                moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
+                date.getTime()
+            );
+            const nutrition = data[barIndex];
+            if (nutrition) {
+              d3.selectAll(".nutrition-bar").attr("opacity", 0.25);
+              const bar = d3
+                .selectAll(`.nutrition-bar-${barIndex}`)
+                .attr("opacity", 1);
+
+              tooltip
+                .style("display", "block")
+                .style("top", `${d3.event.pageY + 20}px`)
+                .style("left", function () {
+                  const { width } = this.getBoundingClientRect();
+                  return `${d3.event.pageX - width / 2}px`;
+                }).html(`
+<p>Calorie intake: ${formatNumber(nutrition.current_value)} cal</p>
+<p>Optimal intake: ${formatNumber(nutrition.optimal_value)} cal</p>
+<p>Date: ${moment.utc(date).format("DD MMM YYYY")}</p>`);
+              return;
+            }
+
+            tooltip.style("display", "none");
+          })
+          .on("mouseover", function () {
+            tooltip.style("display", "block");
+          })
+          .on("mouseout", function () {
+            tooltip.style("display", "none");
+            d3.selectAll(".nutrition-bar").attr("opacity", 1);
+          });
       }
     );
   }

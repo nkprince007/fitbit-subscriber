@@ -31,6 +31,21 @@
     font-size: 0.65rem;
     font-weight: bold;
   }
+
+  #activity-zones-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #activity-zones-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
 <div class="">
@@ -40,26 +55,32 @@
 
 <script>
   function parseActivityZones(dates, data) {
-    return dates.map(
-      (date) =>
-        data.find(
-          (d) =>
-            moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() ===
-            date.getTime()
-        ) || {
-          date,
-          sedentary: 0,
-          lightlyActive: 0,
-          fairlyActive: 0,
-          veryActive: 0,
-          untracked: 24,
-        }
-    );
+    return dates.map((date) => {
+      const activity = data.find(
+        (d) =>
+          moment.utc(d.date, "DD/MM/YYYY").toDate().getTime() === date.getTime()
+      );
+      return activity
+        ? { ...activity, date: moment.utc(date).toDate() }
+        : {
+            date: moment.utc(date).toDate(),
+            sedentary: 0,
+            lightlyActive: 0,
+            fairlyActive: 0,
+            veryActive: 0,
+            untracked: 24,
+          };
+    });
   }
 
   function redrawActivityZones({ range, patientId }) {
     const activityZonesEl = $("#activity-zones");
     const legendEl = d3.select("#activity-zones-legend");
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("id", "activity-zones-tooltip")
+      .style("display", "none");
 
     // set the dimensions and margins of the graph
     var margin = { top: 20, right: 15, bottom: 25, left: 30 },
@@ -161,28 +182,51 @@
         .data((d) => d)
         .enter()
         .append("rect")
+        .attr("class", (_, i) => `activity-zone-bar activity-zone-bar-${i}`)
         .attr("x", (d) => x(moment.utc(d.data.date, "DD/MM/YYYY").toDate()))
         .attr("y", (d) => y(d[1]))
         .attr("height", (d) => y(d[0]) - y(d[1]))
-        .attr("width", x.bandwidth())
+        .attr("width", x.bandwidth());
+
+      svg
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height)
         .style("cursor", "pointer")
-        .append("title")
-        .text(
-          (d) =>
-            `Sedentary: ${d.data.sedentary.toFixed(2)} ${
-              d.data.sedentary === 1 ? "hour" : "hours"
-            }\nLightly Active: ${d.data.lightlyActive.toFixed(2)} ${
-              d.data.lightlyActive === 1 ? "hour" : "hours"
-            }\nFairly Active: ${d.data.fairlyActive.toFixed(2)} ${
-              d.data.fairlyActive === 1 ? "hour" : "hours"
-            }\nVery Active: ${d.data.veryActive.toFixed(2)} ${
-              d.data.veryActive === 1 ? "hour" : "hours"
-            }\nUntracked: ${d.data.untracked.toFixed(2)} ${
-              d.data.untracked === 1 ? "hour" : "hours"
-            }\nDate: ${moment
-              .utc(d.data.date, "DD/MM/YYYY")
-              .format("DD MMM YYYY")}`
-        );
+        .attr("opacity", 0)
+        .on("mousemove", function () {
+          const mouse = d3.mouse(this);
+          const eachBand = x.step();
+          const index = Math.max(0, Math.round(mouse[0] / eachBand) - 1);
+          const date = x.domain()[index];
+          const activity = results.find(
+            (d) => moment.utc(d.date).toDate().getTime() === date.getTime()
+          );
+          d3.selectAll(".activity-zone-bar").attr("opacity", 0.25);
+          const bar = d3
+            .selectAll(`.activity-zone-bar-${index}`)
+            .attr("opacity", 1);
+
+          tooltip
+            .style("top", `${d3.event.pageY + 20}px`)
+            .style("left", function () {
+              const { width } = this.getBoundingClientRect();
+              return `${d3.event.pageX - width / 2}px`;
+            }).html(`
+<p>Sedentary: ${formatNumber(activity.sedentary)} hours</p>
+<p>Lightly Active: ${formatNumber(activity.lightlyActive)} hours</p>
+<p>Fairly Active: ${formatNumber(activity.fairlyActive)} hours</p>
+<p>Very Active: ${formatNumber(activity.veryActive)} hours</p>
+<p>Untracked: ${formatNumber(activity.untracked)} hours</p>
+<p>Date: ${moment.utc(date).format("DD MMM YYYY")}</p>`);
+        })
+        .on("mouseover", function () {
+          tooltip.style("display", "block");
+        })
+        .on("mouseout", function () {
+          tooltip.style("display", "none");
+          d3.selectAll(".activity-zone-bar").attr("opacity", 1);
+        });
     });
   }
 </script>

@@ -53,6 +53,21 @@
     justify-content: center;
     align-items: center;
   }
+
+  #activity-index-tooltip {
+    position: absolute;
+    background-color: darkslategray;
+    padding: 4px;
+    color: white;
+    z-index: 10000;
+    font-size: 12px;
+  }
+
+  #activity-index-tooltip p {
+    margin: 0;
+    display: block;
+    white-space: pre;
+  }
 </style>
 
 <script>
@@ -84,6 +99,11 @@
 
   function redrawActivityHeatmap({ range, patientId }) {
     const heatmapEl = $("#activity-heatmap");
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("id", "activity-index-tooltip")
+      .style("display", "none");
 
     // Labels of row and columns
     const weekdays = [
@@ -157,6 +177,11 @@
         .padding(0.01);
       svg.append("g").call(d3.axisLeft(y).tickSize(0));
 
+      svg.on("mouseout", function () {
+        tooltip.style("display", "none");
+        d3.selectAll(".activity-index-box").attr("opacity", 1);
+      });
+
       svg
         .selectAll()
         .data(summaries)
@@ -176,17 +201,22 @@
             ? d3.interpolateGreens(d.physicalActivityLevel / 2.5)
             : "transparent";
         })
-        .append("title")
-        .text(
-          (d) =>
-            `PAL: ${
-              d.physicalActivityLevel !== null
-                ? d.physicalActivityLevel.toFixed(2)
-                : "Unknown"
-            }
-Date: ${d.date}`
-        );
-
+        .attr("class", "activity-index-box")
+        .on("mousemove", function (d) {
+          d3.selectAll(".activity-index-box").attr("opacity", 0.25);
+          d3.select(this).attr("opacity", 1);
+          tooltip
+            .style("display", "block")
+            .style("top", `${d3.event.pageY + 20}px`)
+            .style(
+              "left",
+              `${d3.event.pageX - this.getBoundingClientRect().width / 2}px`
+            ).html(`
+<p>Physical Activity Level: ${
+            formatNumber(d.physicalActivityLevel) || "Unknown"
+          }</p>
+<p>Date: ${moment.utc(d.date, "DD/MM/YYYY").format("MMM DD YYYY")}</p>`);
+        });
       if (weeks.length > 4) {
         svg
           .selectAll()
@@ -200,7 +230,7 @@ Date: ${d.date}`
           .attr("font-size", 10)
           .attr("width", x.bandwidth())
           .attr("height", y.bandwidth())
-          .style("cursor", "pointer")
+          .style("pointer-events", "none")
           .text((d) =>
             moment
               .utc(d.date, "DD/MM/YYYY")
@@ -214,7 +244,7 @@ Date: ${d.date}`
                   ? d.physicalActivityLevel.toFixed(2)
                   : "Unknown"
               }
-Date: ${d.date}`
+  Date: ${d.date}`
           );
       }
     });
